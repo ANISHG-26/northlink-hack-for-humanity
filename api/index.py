@@ -5,6 +5,7 @@ issued only by staff on behalf of the municipal water office or regional
 health board; the AI only flags patterns for staff review.
 """
 import sys
+import os
 from pathlib import Path
 
 # Make `api.*` importable both under uvicorn (run from repo root) and on Vercel.
@@ -61,12 +62,23 @@ from api.models import (  # noqa: E402
     Staffing,
     ZoneStatus,
 )
-from api.state import now, state  # noqa: E402
+from api.state import now  # noqa: E402
+from api.storage import Store, state  # noqa: E402
+from api.operations import checkpoint_pairs, coverage, requests as service_requests, run_id  # noqa: E402
 
 LEVEL_FRACTIONS = {"full": 1.0, "three_quarters": 0.75, "half": 0.5, "quarter": 0.25, "empty": 0.0}
 STAFF_DEMO_PIN = "1234"  # DEMO ONLY — real deployments need proper staff accounts
 
-app = FastAPI(title="Northlink API", version="0.3.0")
+app = FastAPI(title="Northlink API", version="0.4.0")
+app.state.store = Store()
+
+
+@app.middleware("http")
+async def operational_transaction(request, call_next):
+    if os.getenv("APP_ENV", "demo") == "production" and request.method not in ("GET", "HEAD", "OPTIONS"):
+        from starlette.responses import JSONResponse
+        return JSONResponse({"detail": "Staff authentication must be configured before production writes."}, status_code=403)
+    return await app.state.store.handle(request, call_next)
 
 
 def get_household(household_id: str) -> Household:
@@ -166,7 +178,7 @@ def build_status(h: Household) -> HouseholdStatus:
 
 @app.get("/api/health", response_model=Health)
 def health() -> Health:
-    return Health(status="ok", version=app.version)
+    return Health(status="ok", version=app.version, storage=app.state.store.mode)
 
 
 @app.get("/api/households", response_model=list[Household])
@@ -238,11 +250,24 @@ def classify_report(body: ClassifyIn) -> ClassifyOut:
 @app.post("/api/reports", response_model=Report, status_code=201)
 def create_report(body: ReportIn) -> Report:
     h = get_household(body.household_id)
+    service_type = body.service_type or {"clean_water_low": "water", "sewage_full": "sewage_full"}.get(body.type)
+    if body.timestamp and body.timestamp > now():
+        raise HTTPException(422, "Report time cannot be in the future")
+    for existing in state.reports:
+        if existing.event_id == body.event_id:
+            if (existing.household_id, existing.type, existing.service_type, existing.source, existing.note,
+                existing.timestamp, existing.classifier_category) != (h.id, body.type, service_type, body.source,
+                body.note, body.timestamp or existing.timestamp, body.classifier_category):
+                raise HTTPException(409, "Event ID already belongs to another report")
+            return existing
+    reported_at = body.timestamp or now()
     report = Report(
-        **body.model_dump(exclude={"timestamp", "household_id"}),
+        **body.model_dump(exclude={"timestamp", "household_id", "service_type"}),
         household_id=h.id,
-        id=f"U{len(state.reports) + 1}",
-        timestamp=body.timestamp or now(),
+        id=body.event_id,
+        timestamp=reported_at,
+        reported_at=reported_at,
+        service_type=service_type,
         zone=h.zone,
     )
     state.reports.append(report)
@@ -264,7 +289,13 @@ def complete_delivery(household_id: str, body: CompleteIn | None = None) -> Comp
     h = get_household(household_id)
     body = body or CompleteIn()
     truck_id = get_truck(body.truck_id).id if body.truck_id else h.last_truck_id
-    return state.complete(h.id, truck_id, body.timestamp or now(), body.service)
+    if body.run_id and not body.run_id.startswith(truck_id + ":"):
+        raise HTTPException(422, "Run must belong to the selected truck")
+    if body.timestamp and body.timestamp > now():
+        raise HTTPException(422, "Completion time cannot be in the future")
+    prior = next((c for c in state.completions if c.event_id == body.event_id), None)
+    return state.complete(h.id, truck_id, body.timestamp or (prior.at if prior else now()), body.service,
+                          body.event_id, body.service_type, body.run_id)
 
 
 SEWAGE_ROUTE_DAYS = 3  # include wastewater pickups due within this many days
@@ -278,6 +309,7 @@ def route_today(truck: str = "2") -> RouteToday:
     done = {(c.household_id, c.service) for c in state.completions if c.at.date() == today}
 
     inputs = []
+    open_sewage = {r.household_id for r in service_requests(state) if r.completed_at is None and r.service_type != "water"}
     for h in state.households.values():
         if h.zone not in t.zones:
             continue
@@ -289,7 +321,7 @@ def route_today(truck: str = "2") -> RouteToday:
             vulnerable_type=h.vulnerable_type,
             advisory=adv.status if adv and adv.status != "safe" else None,
         )
-        if (h.id, "water") not in done:
+        if t.service == "water" and (h.id, "water") not in done:
             inputs.append(
                 StopInput(
                     hours_until_empty=f.days_left * 24,
@@ -300,7 +332,8 @@ def route_today(truck: str = "2") -> RouteToday:
                 )
             )
         s = household_sewage(h, f.daily_use_l)
-        if (h.id, "sewage") not in done and s.days_until_full <= SEWAGE_ROUTE_DAYS:
+        sewage_requested = h.id in open_sewage
+        if t.service == "sewage" and (h.id, "sewage") not in done and (s.days_until_full <= SEWAGE_ROUTE_DAYS or sewage_requested):
             inputs.append(
                 StopInput(
                     hours_until_empty=s.days_until_full * 24,
@@ -310,8 +343,12 @@ def route_today(truck: str = "2") -> RouteToday:
                     **common,
                 )
             )
-    stops = [RouteStop(**vars(s)) for s in rank_stops(inputs, t.capacity_l)]
-    return RouteToday(truck=t, generated_at=now(), stops=stops, completed=sorted(done_today, key=lambda c: c.at, reverse=True))
+    stops = [RouteStop(**vars(s)) for s in rank_stops(inputs, t.capacity_l)] if t.status == "in_service" else []
+    run = run_id(t.id, now())
+    water_homes = [s.household_id for s in stops if s.service == "water"] + [c.household_id for c in done_today if c.service == "water"]
+    return RouteToday(run_id=run, truck=t, generated_at=now(), stops=stops,
+        completed=sorted(done_today, key=lambda c: c.at, reverse=True),
+        water_checks=checkpoint_pairs(state, t.id, run, water_homes) if t.service == "water" else [])
 
 
 # --- Dispatcher ------------------------------------------------------------------------
@@ -320,9 +357,6 @@ ZONES = ["A", "B", "C", "D", "E", "F"]
 OUT_LITRES = 50  # effectively empty
 LOW_DAYS = 2
 LOW_ZONE_SHARE = 0.3  # zone shows "running low" when this share of homes are low
-# Sample staffing numbers (the municipality reports a chronic driver shortage).
-DRIVERS_AVAILABLE_TODAY = 2
-DRIVERS_NEEDED = 4  # 3 water trucks + wastewater pickups
 
 
 def illness_cases() -> list[IllnessCase]:
@@ -404,6 +438,7 @@ def dashboard() -> Dashboard:
     sensors = len(state.sensor_raw)
     total = len(state.households)
     trucks = list(state.trucks.values())
+    staffing = coverage(state)
     return Dashboard(
         out_of_water=sum(z.out_of_water for z in zones),
         running_low=sum(z.running_low for z in zones),
@@ -415,8 +450,8 @@ def dashboard() -> Dashboard:
         sensor_pct=round(100 * sensors / total) if total else 0,
         possible_leaks=leak_flags(),
         staffing=Staffing(
-            drivers_available=DRIVERS_AVAILABLE_TODAY,
-            drivers_needed=DRIVERS_NEEDED,
+            drivers_available=staffing.drivers_available,
+            drivers_needed=staffing.water.crews_needed + staffing.sanitation.crews_needed,
             trucks_in_service=sum(1 for t in trucks if t.status == "in_service"),
             trucks_total=len(trucks),
         ),
@@ -457,7 +492,10 @@ def attention() -> list[AttentionItemOut]:
                 t.replace(year=r.reported.year, month=r.reported.month, day=r.reported.day),
                 h.vulnerable_type, h.id in signal_homes, ", ".join(r.symptoms),
             ))
+    completed_request_ids = {r.id for r in service_requests(state) if r.completed_at is not None}
     for r in state.reports:
+        if r.id in completed_request_ids:
+            continue
         h = state.households[r.household_id]
         add(AttentionInput(r.id, r.type, h.id, h.zone, r.timestamp, h.vulnerable_type,
                            r.type == "illness" and h.id in signal_homes, r.note))
@@ -499,7 +537,9 @@ def lift_advisory(zone: str, x_staff_pin: str | None = Header(default=None)) -> 
 @app.post("/api/demo/reset", status_code=204)
 def demo_reset() -> None:
     """Reset all in-memory demo state back to the seed data."""
-    state.__init__()
+    if app.state.store.mode != "sample":
+        raise HTTPException(403, "Reset is available only in process-local sample mode")
+    state.reset()
 
 
 # --- Parts / sealift -------------------------------------------------------------
@@ -549,3 +589,7 @@ def sealift_plan() -> SealiftPlan:
 @app.get("/api/partners", response_model=list[Partner])
 def partners() -> list[Partner]:
     return state.seed.partners
+
+
+from api.operations_api import router as operations_router  # noqa: E402
+app.include_router(operations_router)

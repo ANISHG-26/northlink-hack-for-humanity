@@ -19,6 +19,7 @@ import { api } from '../../api/client'
 import type { Classification, ReportType } from '../../api/types'
 import { useT } from '../../i18n'
 import { useFormat } from '../../i18n/format'
+import { useOperationsText } from '../../i18n/operations'
 
 const ICONS: Record<ReportType, typeof Droplet> = {
   clean_water_low: Droplet,
@@ -40,6 +41,8 @@ type Step =
 
 /** Report a problem: quick buttons, or free text classified by the server — saved only after the resident confirms. */
 export function ReportProblem({ householdId }: { householdId: string }) {
+  const ops = useOperationsText()
+  const [sewageType, setSewageType] = useState<'sewage_full' | 'sewage_blocked'>('sewage_full')
   const t = useT()
   const r = t.report
   const fmt = useFormat()
@@ -79,7 +82,8 @@ export function ReportProblem({ householdId }: { householdId: string }) {
     setBusy(true)
     setError(false)
     try {
-      const res = await api.report({ type, household_id: householdId, note, classifier_category: classifier })
+      const res = await api.report({ type, household_id: householdId, note, classifier_category: classifier,
+        service_type: type === 'sewage_full' ? sewageType : type === 'clean_water_low' ? 'water' : undefined })
       setStep({ kind: 'done', type, queued: res.queued, at: res.queued ? new Date().toISOString() : res.data.timestamp })
       setText('')
     } catch {
@@ -222,6 +226,10 @@ export function ReportProblem({ householdId }: { householdId: string }) {
               {r.error}
             </p>
           )}
+          {step.type === 'sewage_full' && <label className="mt-4 block font-semibold text-navy">{ops.service}
+            <select className="tap mt-1 w-full rounded-xl border-2 border-slate-300 bg-white px-3" value={sewageType} onChange={e => setSewageType(e.target.value as typeof sewageType)}>
+              <option value="sewage_full">{ops.sewage_full}</option><option value="sewage_blocked">{ops.sewage_blocked}</option>
+            </select></label>}
           <div className="mt-4 flex flex-col-reverse gap-3 sm:flex-row">
             <button
               type="button"

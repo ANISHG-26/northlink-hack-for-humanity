@@ -21,8 +21,11 @@ import { RouteStopCard } from '../components/driver/RouteStopCard'
 import { useT } from '../i18n'
 import { useFormat } from '../i18n/format'
 import { useAppStore } from '../store/useAppStore'
+import { StaffGate } from '../components/dispatcher/StaffGate'
+import { WaterChecksPanel } from '../components/operations/WaterChecksPanel'
+import { useOperationsText } from '../i18n/operations'
 
-const TRUCKS = ['T1', 'T2', 'T3']
+const TRUCKS = ['T1', 'T2', 'T3', 'T4']
 const COMPLETE_PATH = /^\/deliveries\/([^/]+)\/complete$/
 
 /** "c12", "C 12", "c-12" → "C-12"; null if it doesn't look like a house code. */
@@ -38,6 +41,7 @@ type Message =
   | { kind: 'error'; text: string }
 
 export function DriverView() {
+  const ops = useOperationsText()
   const t = useT()
   const fmt = useFormat()
   const isOnline = useAppStore((s) => s.isOnline)
@@ -47,6 +51,7 @@ export function DriverView() {
 
   const [truckId, setTruckId] = useState('T2')
   const [service, setService] = useState<Service>('water')
+  const [sewageType, setSewageType] = useState<'sewage_full' | 'sewage_blocked'>('sewage_full')
   const [route, setRoute] = useState<RouteToday | null>(null)
   const [cachedAt, setCachedAt] = useState<string | undefined>()
   const [loadError, setLoadError] = useState(false)
@@ -118,7 +123,7 @@ export function DriverView() {
     }
     setBusy(true)
     try {
-      const res = await api.completeDelivery(normalized, truckId, service)
+      const res = await api.completeDelivery(normalized, truckId, service, service === 'water' ? 'water' : sewageType, route?.run_id)
       if (res.queued) {
         setMessage({ kind: 'queued', code: normalized })
       } else {
@@ -127,7 +132,7 @@ export function DriverView() {
       }
       setCode('')
     } catch {
-      setMessage({ kind: 'error', text: t.driver.codeUnknown(normalized) })
+      setMessage({ kind: 'error', text: ops.error })
     } finally {
       setBusy(false)
       messageRef.current?.focus()
@@ -161,7 +166,7 @@ export function DriverView() {
                 key={id}
                 type="button"
                 aria-pressed={truckId === id}
-                onClick={() => setTruckId(id)}
+                onClick={() => { setTruckId(id); setService(id === 'T4' ? 'sewage' : 'water') }}
                 className={`tap inline-flex items-center gap-2 rounded-xl border-2 px-3 font-semibold ${
                   truckId === id ? 'border-navy bg-navy text-white' : 'border-slate-200 text-navy hover:bg-slate-50'
                 }`}
@@ -214,6 +219,10 @@ export function DriverView() {
             })}
           </div>
         </fieldset>
+        {service === 'sewage' && <label className="font-semibold text-navy">{ops.service}
+          <select className="tap mt-1 w-full rounded-xl border-2 border-slate-300 bg-white px-3" value={sewageType} onChange={e => setSewageType(e.target.value as typeof sewageType)}>
+            <option value="sewage_full">{ops.sewage_full}</option><option value="sewage_blocked">{ops.sewage_blocked}</option>
+          </select></label>}
 
         {/* Scan / enter code */}
         <div>
@@ -289,6 +298,9 @@ export function DriverView() {
       </section>
 
       {(!isOnline || cachedAt) && <OfflineBanner cachedAt={cachedAt} />}
+      {route && route.truck.status !== 'in_service' && <p role="status" className="flex items-center gap-2 font-semibold text-status-boil"><TriangleAlert aria-hidden="true" />{route.truck.id}: {ops[route.truck.status]}</p>}
+      <StaffGate />
+      {route?.truck.service === 'water' && <WaterChecksPanel key={route.run_id} route={route} cached={!!cachedAt} onChange={() => void load()} />}
 
       {/* Today's route */}
       <section aria-labelledby="route-heading">
@@ -316,6 +328,11 @@ export function DriverView() {
               </>
             )}
           </div>
+        ) : route.truck.status !== 'in_service' ? (
+          <p className="card flex items-center gap-3 font-semibold text-status-boil">
+            <TriangleAlert aria-hidden="true" className="h-6 w-6" />
+            {route.truck.id}: {ops[route.truck.status]}
+          </p>
         ) : stops.length === 0 ? (
           <p className="card flex items-center gap-3 text-lg font-semibold text-status-safe">
             <PartyPopper aria-hidden="true" className="h-6 w-6" />
@@ -352,7 +369,7 @@ export function DriverView() {
               </li>
             ))}
             {completed.map((c) => (
-              <li key={`${c.household_id}-${c.service}`} className="flex flex-wrap items-center justify-between gap-2 px-4 py-3">
+              <li key={c.event_id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-3">
                 <span>
                   <span className="text-xl font-bold text-navy">{c.household_id}</span>
                   <span className="ml-2 text-slate-600">{t.driver.service[c.service]}</span>

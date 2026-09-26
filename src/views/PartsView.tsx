@@ -21,6 +21,9 @@ import { OfflineBanner } from '../components/OfflineBanner'
 import { useT } from '../i18n'
 import { useFormat } from '../i18n/format'
 import { useAppStore } from '../store/useAppStore'
+import { StaffGate } from '../components/dispatcher/StaffGate'
+import { RepairsPanel } from '../components/operations/RepairsPanel'
+import { useOperationsText } from '../i18n/operations'
 
 // Colour always paired with icon + text.
 const STATUS_STYLES: Record<PartStatus, { Icon: typeof CircleCheck; cls: string }> = {
@@ -129,6 +132,7 @@ function DraftDialog({ partner, plan, onClose }: { partner: Partner; plan: Seali
 }
 
 export function PartsView() {
+  const ops = useOperationsText()
   const t = useT()
   const p = t.parts
   const fmt = useFormat()
@@ -179,6 +183,8 @@ export function PartsView() {
   return (
     <div className="flex flex-col gap-5">
       {(!isOnline || cachedAt) && <OfflineBanner cachedAt={cachedAt} />}
+      <StaffGate />
+      <RepairsPanel onChange={() => { api.sealiftPlan().then(r => { setPlan(r.data); setCachedAt(r.fromCache ? r.cachedAt : undefined) }).catch(() => setError(true)) }} />
 
       {/* Sealift deadline */}
       <section aria-labelledby="deadline-heading" className="rounded-2xl bg-navy text-white p-5 shadow-sm">
@@ -304,6 +310,7 @@ export function PartsView() {
                   </span>
                   {partner.name}
                 </h3>
+                <p className="mt-2 flex items-center gap-2 text-status-boil"><TriangleAlert aria-hidden="true" className="h-5 w-5 shrink-0" />{ops.unverified}</p>
                 <p className="mt-3 font-semibold text-slate-600">{p.helpsWith}</p>
                 <ul className="mt-1 list-disc pl-6 text-ink">
                   {partner.helps_with.map((h) => (

@@ -5,6 +5,130 @@ export type Zone = 'A' | 'B' | 'C' | 'D' | 'E' | 'F'
 export type VulnerableType = 'elder' | 'infant' | 'medical'
 export type MeasurementSource = 'sensor' | 'estimated'
 export type Service = 'water' | 'sewage'
+export type ServiceType = 'water' | 'sewage_full' | 'sewage_blocked'
+
+export interface CompleteIn {
+  event_id?: string
+  truck_id?: string | null
+  timestamp?: string | null
+  service?: Service
+  service_type?: ServiceType | null
+  run_id?: string | null
+}
+export interface Driver {
+  id: string
+  name: string
+  service: Service
+  status: 'available' | 'standby' | 'absent'
+}
+export interface ReadinessIn {
+  drivers?: Record<string, Driver['status']>
+  trucks?: Record<string, Truck['status']>
+}
+export interface ServiceRequest {
+  id: string
+  household_id: string
+  service_type: ServiceType
+  source: 'resident' | 'driver' | 'dispatcher' | 'sample'
+  reported_at: string
+  completion_event_id: string | null
+  completed_at: string | null
+  response_seconds: number | null
+}
+export interface VisitSummary {
+  household_id: string
+  service_type: ServiceType
+  last_visit: string | null
+  visit_count: number
+}
+export interface ServiceCoverage {
+  service: Service
+  drivers_available: number
+  drivers_standby: number
+  trucks_in_service: number
+  crews_available: number
+  crews_needed: number
+  shortfall: number
+  households_per_truck: number | null
+  household_coverage: number | null
+  uncovered_households: number | null
+}
+export interface Coverage {
+  drivers_available: number
+  drivers_standby: number
+  trucks_in_service: number
+  shortfall: boolean
+  water: ServiceCoverage
+  sanitation: ServiceCoverage
+  assumption: string
+}
+export interface Operations {
+  storage: 'sample' | 'postgres'
+  open_requests: ServiceRequest[]
+  completed_requests: ServiceRequest[]
+  visits: VisitSummary[]
+  completions: Completion[]
+  drivers: Driver[]
+  trucks: Truck[]
+  coverage: Coverage
+}
+export interface BreakdownIn {
+  event_id?: string
+  truck_id: string
+  part_id: string
+  symptom: string
+  cause_category?: 'unknown' | 'wear' | 'freeze' | 'electrical' | 'other'
+  cause_confirmed?: boolean
+  opened_at: string
+}
+export interface Breakdown extends BreakdownIn {
+  event_id: string
+  cause_category: NonNullable<BreakdownIn['cause_category']>
+  cause_confirmed: boolean
+  status: 'open' | 'repairing' | 'fixed'
+  fixed_at: string | null
+  stock_quantity: number
+  parts_used: number
+  restoration_seconds: number | null
+}
+export interface RepairIn {
+  status: 'repairing' | 'fixed'
+  fixed_at?: string | null
+  parts_used?: number
+}
+export interface StockIn { on_hand: number }
+export interface WaterCheckIn {
+  event_id?: string
+  checkpoint: 'source' | 'drop_point'
+  truck_id: string
+  run_id: string
+  household_id?: string | null
+  sampled_at: string
+  collector: string
+  parameter: string
+  value: number
+  units: string
+  method?: string | null
+}
+export interface WaterCheck extends WaterCheckIn {
+  event_id: string
+  household_id: string | null
+  method: string | null
+  review_status: 'unreviewed' | 'reviewed' | 'follow_up'
+  reviewed_by: string | null
+  reviewed_at: string | null
+  sample_data: true
+}
+export interface ReviewIn {
+  review_status: 'reviewed' | 'follow_up'
+  reviewed_by: string
+}
+export interface CheckpointPair {
+  household_id: string
+  source: WaterCheck[]
+  drop_point: WaterCheck[]
+  flags: ('missing_source' | 'missing_drop_point' | 'unreviewed' | 'follow_up')[]
+}
 export type AdvisorySource = 'Municipal water office' | 'Regional health board'
 
 export interface Household {
@@ -26,6 +150,7 @@ export interface Household {
 }
 
 export interface Truck {
+  service: Service
   id: string
   name: string
   capacity_l: number
@@ -56,6 +181,7 @@ export interface Part {
 }
 
 export interface Partner {
+  verification_status: 'unverified'
   id: string
   type: 'health' | 'provincial' | 'federal' | 'supplier'
   name: string
@@ -64,6 +190,7 @@ export interface Partner {
 }
 
 export interface Health {
+  storage: 'sample' | 'postgres'
   status: 'ok'
   version: string
 }
@@ -160,6 +287,9 @@ export interface HouseholdStatus {
 export type ReportType = 'clean_water_low' | 'sewage_full' | 'water_quality' | 'tank_damage' | 'illness' | 'other'
 
 export interface ReportIn {
+  event_id?: string
+  source?: 'resident' | 'driver' | 'dispatcher' | 'sample'
+  service_type?: ServiceType | null
   type: ReportType
   household_id: string
   timestamp?: string
@@ -168,6 +298,10 @@ export interface ReportIn {
 }
 
 export interface Report extends ReportIn {
+  event_id: string
+  source: 'resident' | 'driver' | 'dispatcher' | 'sample'
+  service_type: ServiceType | null
+  reported_at: string | null
   id: string
   timestamp: string
   zone: Zone
@@ -194,6 +328,10 @@ export interface RouteStop {
 }
 
 export interface Completion {
+  event_id: string
+  completed_at: string
+  service_type: ServiceType
+  run_id: string
   household_id: string
   zone: Zone
   truck_id: string
@@ -202,6 +340,8 @@ export interface Completion {
 }
 
 export interface RouteToday {
+  run_id: string
+  water_checks: CheckpointPair[]
   truck: Truck
   generated_at: string
   stops: RouteStop[]

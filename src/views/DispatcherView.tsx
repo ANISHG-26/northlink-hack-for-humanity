@@ -12,6 +12,7 @@ import { SummaryCards } from '../components/dispatcher/SummaryCards'
 import { ZoneMap } from '../components/dispatcher/ZoneMap'
 import { useT } from '../i18n'
 import { useAppStore } from '../store/useAppStore'
+import { OperationsPanel } from '../components/operations/OperationsPanel'
 
 const POLL_MS = 15_000
 
@@ -81,6 +82,8 @@ export function DispatcherView() {
     <div className="flex flex-col gap-5">
       {(!isOnline || cachedAt) && <OfflineBanner cachedAt={cachedAt} />}
       <SummaryCards data={dash} />
+      <StaffGate />
+      <OperationsPanel onChange={() => void load()} />
 
       {notice && (
         <p role="status" className="flex items-center gap-2 rounded-xl bg-green-50 border-2 border-status-safe p-3 font-semibold text-status-safe">
@@ -92,7 +95,6 @@ export function DispatcherView() {
       <div className="grid gap-5 lg:grid-cols-[3fr_2fr] items-start">
         <ZoneMap zones={dash.zones} />
         <div className="flex flex-col gap-5">
-          <StaffGate />
           <OutbreakPanel alerts={alerts} onIssue={setDialogZone} />
 
           <section aria-labelledby="adv-heading" className="card">

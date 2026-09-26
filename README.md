@@ -46,7 +46,9 @@ Northlink is the bridge until then, and its data supports the pipeline plan.
 /api                 Python FastAPI app (Vercel serverless function)
   index.py           routes
   models.py          Pydantic models (mirrored in src/api/types.ts)
-  state.py           in-memory demo state + simulated tank sensors
+  state.py           sample state + simulated tank sensors
+  storage.py         optional transactional Postgres persistence
+  operations*.py     service tracking, readiness, repair and water-check workflows
   ai/                pure-function "AI" modules (no network, no paid APIs, no keys)
   data/seed.json     sample data
 /tests               pytest suite for every AI module
@@ -124,12 +126,32 @@ Tests:
 ```bash
 pip install -r requirements-dev.txt
 python -m pytest
+npm test
+npm run build
 ```
 
 ## Deploy (Vercel, free tier)
 
 Import the repo in Vercel and deploy. `vercel.json` builds the Vite app from `dist/` and serves
-`api/index.py` as a Python function at `/api/*`. No environment variables or keys are needed.
+`api/index.py` as a Python function at `/api/*`. No environment variables are needed
+for process-local sample mode. Shared tracking requires server-only `DATABASE_URL`,
+the migration, and the seed command. See [operations setup and API handoff](docs/operations.md).
+
+## Service operations, repairs, and water checkpoints
+
+- **Dispatcher:** open/completed requests, response times, visit counts, and separate
+  water/sanitation coverage. Staff can simulate absent drivers and unavailable trucks.
+- **Parts:** record breakdowns, track repair time, consume/update parts stock, and
+  return trucks to service. Partner contacts remain unverified.
+- **Driver:** T1–T3 water routes and T4 sample sanitation route; stable completion IDs
+  make offline retries idempotent. Source/drop-point sample checks appear together,
+  with missing or unreviewed checks flagged for staff.
+- **Storage:** optional Postgres retains operations across server restarts/devices;
+  without configuration the seeded demo continues to work in memory.
+
+See [the workflow guide, API contract, and database setup](docs/operations.md).
+The demo PIN is not production authentication. `APP_ENV=production` blocks writes
+until proper staff authentication is implemented.
 
 ## Important notes
 

@@ -1,0 +1,68 @@
+import { useAppStore } from '../store/useAppStore'
+
+const en = {
+  operations: 'Service operations', refresh: 'Refresh', sample: 'Sample data · saved in this server session',
+  postgres: 'Sample data · shared database', cached: 'Cached view. Reconnect and refresh before making changes.',
+  error: 'Could not save or load this update. Check your connection and staff mode, then retry.',
+  loading: 'Loading operations…', saved: 'Update saved.', staff: 'Unlock demo staff mode to make changes.',
+  shortfall: 'Coverage shortfall', covered: 'Coverage available', available: 'Available', standby: 'Standby', absent: 'Absent',
+  in_service: 'In service', maintenance: 'Under repair', out_of_service: 'Out of service',
+  water: 'Water', sewage: 'Sanitation', sewage_full: 'Sewage full', sewage_blocked: 'Sewage blocked',
+  drivers: 'Drivers', trucks: 'Trucks in service', crews: 'Active crews / required',
+  assumption: 'Up to 500 households per water truck describes coverage, not daily deliveries. The sample zones need three water crews and one separate sanitation crew. Standby drivers must be activated.',
+  simulate: 'Simulate D1 absent + T1 unavailable', readiness: 'Driver and truck readiness',
+  requests: 'Open requests', noRequests: 'No open service requests.', history: 'Completed requests and response time',
+  noHistory: 'Response time appears after a request is completed.', visits: 'Recorded visits', noVisits: 'No visits recorded yet.',
+  household: 'Household code', service: 'Service', reported: 'Reported', completed: 'Completed', response: 'Response time',
+  count: 'Visits', lastVisit: 'Last visit', minutes: 'min', hours: 'h',
+  repairs: 'Breakdowns and repairs', incident: 'Record an incident', truck: 'Truck', part: 'Affected part', symptom: 'Observed symptom',
+  cause: 'Cause category', unknown: 'Unknown', wear: 'Wear', freeze: 'Freezing', electrical: 'Electrical', other: 'Other',
+  unconfirmed: 'Unconfirmed cause', confirmed: 'Confirmed locally', opened: 'Incident time', fixed: 'Restored service',
+  open: 'Open', repairing: 'Repair in progress', fixedStatus: 'Fixed', startRepair: 'Start repair', finishRepair: 'Return to service',
+  partsUsed: 'Parts used', stock: 'On hand', updateStock: 'Update stock', repairTime: 'Incident to restored service',
+  noRepairs: 'No breakdowns recorded.', save: 'Save', saving: 'Saving…', unverified: 'Unverified · confirm details locally',
+  quality: 'Water checkpoints', qualityNote: 'Sample readings for record and review. Staff control official advisories. No drinking-water safety result is calculated.',
+  unspecified: 'Unspecified pending local authority confirmation', source: 'Source', drop_point: 'Household drop point',
+  checkpoint: 'Checkpoint', sampled: 'Sample time', collector: 'Collector', parameter: 'Parameter', value: 'Value', units: 'Units', method: 'Method (optional)',
+  review_status: 'Review status', unreviewed: 'Unreviewed', reviewed: 'Reviewed', follow_up: 'Follow-up needed',
+  missing_source: 'Source check missing', missing_drop_point: 'Drop-point check missing',
+  review: 'Mark reviewed', followUp: 'Flag follow-up', reviewer: 'Reviewer', recordCheck: 'Record a sample check',
+  selectHouse: 'Select a household', run: 'Run', reviewNeeded: 'Staff review needed', checksReviewed: 'Checkpoints reviewed',
+  noChecks: 'No water checkpoints for this route.', noReading: 'No reading recorded.',
+}
+const fr: typeof en = {
+  operations: 'Suivi des services', refresh: 'Actualiser', sample: 'Données fictives · session de ce serveur',
+  postgres: 'Données fictives · base partagée', cached: 'Vue en cache. Reconnectez-vous et actualisez avant toute modification.',
+  error: 'Impossible de charger ou d’enregistrer. Vérifiez la connexion et le mode personnel, puis réessayez.',
+  loading: 'Chargement du suivi…', saved: 'Modification enregistrée.', staff: 'Déverrouillez le mode personnel de démonstration.',
+  shortfall: 'Couverture insuffisante', covered: 'Couverture disponible', available: 'Disponible', standby: 'En réserve', absent: 'Absent',
+  in_service: 'En service', maintenance: 'En réparation', out_of_service: 'Hors service',
+  water: 'Eau', sewage: 'Assainissement', sewage_full: 'Réservoir d’eaux usées plein', sewage_blocked: 'Évacuation bloquée',
+  drivers: 'Chauffeurs', trucks: 'Camions en service', crews: 'Équipes actives / nécessaires',
+  assumption: 'La limite de 500 ménages par camion d’eau décrit la couverture, pas les livraisons quotidiennes. Les zones fictives nécessitent trois équipes d’eau et une équipe d’assainissement distincte. Les chauffeurs de réserve doivent être activés.',
+  simulate: 'Simuler D1 absent + T1 hors service', readiness: 'Disponibilité du personnel et des camions',
+  requests: 'Demandes ouvertes', noRequests: 'Aucune demande ouverte.', history: 'Demandes traitées et délai de réponse',
+  noHistory: 'Le délai apparaît après le traitement d’une demande.', visits: 'Visites enregistrées', noVisits: 'Aucune visite enregistrée.',
+  household: 'Code du ménage', service: 'Service', reported: 'Signalement', completed: 'Traitement', response: 'Délai de réponse',
+  count: 'Visites', lastVisit: 'Dernière visite', minutes: 'min', hours: 'h',
+  repairs: 'Pannes et réparations', incident: 'Signaler un incident', truck: 'Camion', part: 'Pièce concernée', symptom: 'Symptôme observé',
+  cause: 'Catégorie de cause', unknown: 'Inconnue', wear: 'Usure', freeze: 'Gel', electrical: 'Électrique', other: 'Autre',
+  unconfirmed: 'Cause non confirmée', confirmed: 'Confirmée localement', opened: 'Date de l’incident', fixed: 'Remise en service',
+  open: 'Ouvert', repairing: 'Réparation en cours', fixedStatus: 'Réparé', startRepair: 'Commencer la réparation', finishRepair: 'Remettre en service',
+  partsUsed: 'Pièces utilisées', stock: 'En stock', updateStock: 'Actualiser le stock', repairTime: 'De l’incident à la remise en service',
+  noRepairs: 'Aucune panne enregistrée.', save: 'Enregistrer', saving: 'Enregistrement…', unverified: 'Non vérifié · confirmer localement',
+  quality: 'Contrôles de l’eau', qualityNote: 'Mesures fictives à consigner et examiner. Le personnel contrôle les avis officiels. Aucun résultat de potabilité n’est calculé.',
+  unspecified: 'Non précisé, en attente de confirmation locale', source: 'Source', drop_point: 'Point de livraison',
+  checkpoint: 'Point de contrôle', sampled: 'Date du prélèvement', collector: 'Préleveur', parameter: 'Paramètre', value: 'Valeur', units: 'Unités', method: 'Méthode (facultative)',
+  review_status: 'État de révision', unreviewed: 'Non examiné', reviewed: 'Examiné', follow_up: 'Suivi nécessaire',
+  missing_source: 'Contrôle à la source manquant', missing_drop_point: 'Contrôle à la livraison manquant',
+  review: 'Marquer comme examiné', followUp: 'Demander un suivi', reviewer: 'Réviseur', recordCheck: 'Consigner une mesure fictive',
+  selectHouse: 'Choisir un ménage', run: 'Tournée', reviewNeeded: 'Examen du personnel nécessaire', checksReviewed: 'Contrôles examinés',
+  noChecks: 'Aucun contrôle d’eau pour cette tournée.', noReading: 'Aucune mesure enregistrée.',
+}
+
+export function useOperationsText() {
+  const lang = useAppStore(s => s.lang)
+  // TODO: community translation review — Inuktitut uses English placeholders.
+  return lang === 'fr' ? fr : en
+}
