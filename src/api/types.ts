@@ -62,9 +62,17 @@ export type WaterStatus = 'safe' | 'boil' | 'nodrink'
 
 export interface Advisory {
   zone: Zone
-  status: WaterStatus
+  status: WaterStatus // 'boil' | 'nodrink' when active
   since: string
   reason: string
+  message: string | null
+  issued_at: string | null
+}
+
+export interface AdvisoryIn {
+  zone: Zone
+  level: 'boil' | 'do_not_drink'
+  message: string
 }
 
 // --- Resident status ---------------------------------------------------------
@@ -90,6 +98,7 @@ export interface Safety {
   zone: Zone
   since: string | null
   reason: string | null
+  message: string | null
 }
 
 export interface Delivery {
@@ -154,4 +163,53 @@ export interface RouteToday {
   generated_at: string
   stops: RouteStop[]
   completed: Completion[]
+}
+
+// --- Dispatcher ----------------------------------------------------------------
+
+export type ZoneState = 'ok' | 'low' | 'out' | 'advisory'
+
+export interface ZoneStatus {
+  zone: Zone
+  households: number
+  out_of_water: number
+  running_low: number
+  illness_7d: number
+  advisory: WaterStatus | null
+  status: ZoneState
+}
+
+export interface Dashboard {
+  out_of_water: number
+  running_low: number
+  delivered_today: number
+  active_advisories: number
+  zones: ZoneStatus[]
+}
+
+export interface SharedFactor {
+  kind: 'truck_and_day' | 'truck' | 'none'
+  truck_id: string | null
+  truck_name: string | null
+  delivery_date: string | null
+  weekday: string | null
+  matching: number
+  total: number
+}
+
+export interface OutbreakAlert {
+  zone: Zone
+  count: number
+  window_days: number
+  span_days: number
+  baseline_weekly: number
+  ratio: number
+  households: string[]
+  shared: SharedFactor
+  water_quality_reports: number
+  suggested_level: 'boil' | 'nodrink'
+  advisory_active: WaterStatus | null
+  summary: string // English; UI builds a localized version from the fields
+  recommended_action: string
+  how_detected: string[]
 }

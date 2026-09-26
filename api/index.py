@@ -7,12 +7,21 @@ ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from datetime import timedelta  # noqa: E402
+
 from fastapi import FastAPI, HTTPException  # noqa: E402
 
 from api.ai.forecast import Reading, forecast  # noqa: E402
+from api.ai.outbreak import IllnessCase, QualityComplaint, detect_outbreaks  # noqa: E402
 from api.ai.routing import StopInput, rank_stops  # noqa: E402
 from api.models import (  # noqa: E402
     DELIVERY_STAGES,
+    Advisory,
+    AdvisoryIn,
+    Dashboard,
+    OutbreakAlertOut,
+    SharedFactorOut,
+    ZoneStatus,
     CompleteIn,
     Completion,
     RouteStop,
@@ -42,7 +51,7 @@ def get_household(household_id: str) -> Household:
 
 
 def zone_advisory(zone: str):
-    return next((a for a in state.seed.advisories if a.zone == zone), None)
+    return state.advisories.get(zone)
 
 
 def household_forecast(h: Household):
@@ -81,6 +90,7 @@ def build_status(h: Household) -> HouseholdStatus:
             zone=h.zone,
             since=advisory.since if advisory else None,
             reason=advisory.reason if advisory else None,
+            message=advisory.message if advisory else None,
         ),
         delivery=Delivery(
             stage=DELIVERY_STAGES[d["stage_index"]],
@@ -171,3 +181,119 @@ def complete_delivery(household_id: str, body: CompleteIn | None = None) -> Comp
     body = body or CompleteIn()
     truck_id = get_truck(body.truck_id).id if body.truck_id else h.last_truck_id
     return state.complete_delivery(h.id, truck_id, body.timestamp or now())
+
+
+# --- Dispatcher ----------------------------------------------------------------
+
+ZONES = ["A", "B", "C", "D", "E", "F"]
+OUT_LITRES = 50  # effectively empty
+LOW_DAYS = 2
+LOW_ZONE_SHARE = 0.3  # zone shows "running low" when this share of homes are low
+
+
+def illness_cases() -> list[IllnessCase]:
+    """Seed illness reports plus new illness reports from residents."""
+    cases = [
+        IllnessCase(r.household_id, r.zone, r.reported, r.truck_id, state.households[r.household_id].last_delivery)
+        for r in state.seed.illness_reports
+    ]
+    for r in state.reports:
+        if r.type == "illness":
+            h = state.households[r.household_id]
+            cases.append(IllnessCase(h.id, h.zone, r.timestamp.astimezone(now().tzinfo).date(), h.last_truck_id, h.last_delivery))
+    return cases
+
+
+def quality_complaints() -> list[QualityComplaint]:
+    return [
+        QualityComplaint(r.household_id, r.zone, r.timestamp.astimezone(now().tzinfo).date())
+        for r in state.reports
+        if r.type == "water_quality"
+    ]
+
+
+def outbreak_alerts() -> list[OutbreakAlertOut]:
+    names = {t.id: t.name for t in state.trucks.values()}
+    alerts = detect_outbreaks(
+        illness_cases(), quality_complaints(), state.seed.baseline_weekly_illness, now().date(), names
+    )
+    out = []
+    for a in alerts:
+        adv = zone_advisory(a.zone)
+        out.append(
+            OutbreakAlertOut(
+                **{k: v for k, v in vars(a).items() if k != "shared"},
+                shared=SharedFactorOut(**vars(a.shared), truck_name=names.get(a.shared.truck_id or "")),
+                advisory_active=adv.status if adv else None,
+            )
+        )
+    return out
+
+
+@app.get("/api/dashboard", response_model=Dashboard)
+def dashboard() -> Dashboard:
+    today = now().date()
+    start = today - timedelta(days=6)
+    cases = [c for c in illness_cases() if start <= c.reported <= today]
+    zones = []
+    for z in ZONES:
+        hs = [h for h in state.households.values() if h.zone == z]
+        fs = [household_forecast(h) for h in hs]
+        out = sum(1 for f in fs if f.litres_left < OUT_LITRES)
+        low = sum(1 for f in fs if f.litres_left >= OUT_LITRES and f.days_left < LOW_DAYS)
+        adv = zone_advisory(z)
+        status = "advisory" if adv else "out" if out else "low" if hs and low / len(hs) >= LOW_ZONE_SHARE else "ok"
+        zones.append(
+            ZoneStatus(
+                zone=z,
+                households=len(hs),
+                out_of_water=out,
+                running_low=low,
+                illness_7d=sum(1 for c in cases if c.zone == z),
+                advisory=adv.status if adv else None,
+                status=status,
+            )
+        )
+    return Dashboard(
+        out_of_water=sum(z.out_of_water for z in zones),
+        running_low=sum(z.running_low for z in zones),
+        delivered_today=sum(1 for c in state.completions if c.at.date() == today),
+        active_advisories=len(state.advisories),
+        zones=zones,
+    )
+
+
+@app.get("/api/outbreaks", response_model=list[OutbreakAlertOut])
+def outbreaks() -> list[OutbreakAlertOut]:
+    return outbreak_alerts()
+
+
+@app.get("/api/advisories", response_model=list[Advisory])
+def advisories() -> list[Advisory]:
+    return sorted(state.advisories.values(), key=lambda a: a.zone)
+
+
+@app.post("/api/advisories", response_model=Advisory, status_code=201)
+def issue_advisory(body: AdvisoryIn) -> Advisory:
+    t = now()
+    adv = Advisory(
+        zone=body.zone,
+        status="boil" if body.level == "boil" else "nodrink",
+        since=t.date(),
+        reason="Issued by dispatcher",
+        message=body.message.strip() or None,
+        issued_at=t,
+    )
+    state.advisories[body.zone] = adv
+    return adv
+
+
+@app.delete("/api/advisories/{zone}", status_code=204)
+def lift_advisory(zone: str) -> None:
+    state.advisories.pop(zone.upper(), None)
+
+
+@app.post("/api/demo/reset", status_code=204)
+def demo_reset() -> None:
+    """Reset all in-memory demo state back to the seed data."""
+    state.__init__()

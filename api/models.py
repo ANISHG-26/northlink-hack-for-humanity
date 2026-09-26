@@ -54,9 +54,17 @@ WaterStatus = Literal["safe", "boil", "nodrink"]
 
 class Advisory(BaseModel):
     zone: Zone
-    status: WaterStatus
+    status: WaterStatus  # "boil" or "nodrink" for an active advisory
     since: date
     reason: str
+    message: str | None = None
+    issued_at: datetime | None = None
+
+
+class AdvisoryIn(BaseModel):
+    zone: Zone
+    level: Literal["boil", "do_not_drink"]
+    message: str
 
 
 class SeedData(BaseModel):
@@ -67,6 +75,8 @@ class SeedData(BaseModel):
     illness_reports: list[IllnessReport]
     parts: list[Part]
     advisories: list[Advisory] = []
+    baseline_weekly_illness: dict[str, float] = {}
+    resident_reports: list["Report"] = []
 
 
 # --- Resident status ---------------------------------------------------------
@@ -93,6 +103,7 @@ class Safety(BaseModel):
     zone: Zone
     since: date | None
     reason: str | None
+    message: str | None = None
 
 
 class Delivery(BaseModel):
@@ -170,6 +181,59 @@ class CompleteIn(BaseModel):
     timestamp: datetime | None = None
 
 
+# --- Dispatcher ---------------------------------------------------------------
+
+ZoneState = Literal["ok", "low", "out", "advisory"]
+
+
+class ZoneStatus(BaseModel):
+    zone: Zone
+    households: int
+    out_of_water: int
+    running_low: int
+    illness_7d: int
+    advisory: WaterStatus | None
+    status: ZoneState
+
+
+class Dashboard(BaseModel):
+    out_of_water: int
+    running_low: int
+    delivered_today: int
+    active_advisories: int
+    zones: list[ZoneStatus]
+
+
+class SharedFactorOut(BaseModel):
+    kind: Literal["truck_and_day", "truck", "none"]
+    truck_id: str | None
+    truck_name: str | None
+    delivery_date: date | None
+    weekday: str | None
+    matching: int
+    total: int
+
+
+class OutbreakAlertOut(BaseModel):
+    zone: Zone
+    count: int
+    window_days: int
+    span_days: int
+    baseline_weekly: float
+    ratio: float
+    households: list[str]
+    shared: SharedFactorOut
+    water_quality_reports: int
+    suggested_level: Literal["boil", "nodrink"]
+    advisory_active: WaterStatus | None
+    summary: str
+    recommended_action: str
+    how_detected: list[str]
+
+
 class Health(BaseModel):
     status: Literal["ok"]
     version: str
+
+
+SeedData.model_rebuild()

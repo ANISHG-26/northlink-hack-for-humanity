@@ -9,7 +9,7 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from api.ai.forecast import Reading
-from api.models import DELIVERY_STAGES, Completion, Household, Report, SeedData
+from api.models import DELIVERY_STAGES, Advisory, Completion, Household, Report, SeedData
 
 # Inukjuak is on Eastern Time.
 TZ = ZoneInfo("America/Toronto")
@@ -25,12 +25,15 @@ def _shift_dates(obj, days: int):
     if isinstance(obj, list):
         return [_shift_dates(x, days) for x in obj]
     if isinstance(obj, dict):
-        return {
-            k: (date.fromisoformat(v) + timedelta(days=days)).isoformat()
-            if k in SHIFTED_DATE_FIELDS and isinstance(v, str)
-            else _shift_dates(v, days)
-            for k, v in obj.items()
-        }
+        out = {}
+        for k, v in obj.items():
+            if k in SHIFTED_DATE_FIELDS and isinstance(v, str):
+                out[k] = (date.fromisoformat(v) + timedelta(days=days)).isoformat()
+            elif k == "timestamp" and isinstance(v, str):
+                out[k] = (datetime.fromisoformat(v) + timedelta(days=days)).isoformat()
+            else:
+                out[k] = _shift_dates(v, days)
+        return out
     return obj
 
 
@@ -51,7 +54,10 @@ class State:
         self.seed = SeedData.model_validate(_shift_dates(raw, offset))
         self.households: dict[str, Household] = {h.id: h for h in self.seed.households}
         self.trucks = {t.id: t for t in self.seed.trucks}
-        self.reports: list[Report] = []
+        # Resident reports (water quality, tank damage, illness) — seed + new.
+        self.reports: list[Report] = list(self.seed.resident_reports)
+        # Active advisories by zone.
+        self.advisories: dict[str, Advisory] = {a.zone: a for a in self.seed.advisories}
         self.completions: list[Completion] = []
 
         # Level readings: last delivery (tank full) + the seeded current level.

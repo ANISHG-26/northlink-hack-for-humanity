@@ -15,6 +15,10 @@ import type {
   ReportIn,
   Completion,
   RouteToday,
+  Advisory,
+  AdvisoryIn,
+  Dashboard,
+  OutbreakAlert,
 } from './types'
 
 const CACHE_PREFIX = 'northlink:cache:'
@@ -165,5 +169,13 @@ export const api = {
       truck_id: truckId,
       timestamp: new Date().toISOString(),
     }),
+  dashboard: () => get<Dashboard>('/dashboard'),
+  outbreaks: () => get<OutbreakAlert[]>('/outbreaks'),
+  advisories: () => get<Advisory[]>('/advisories'),
+  issueAdvisory: (a: AdvisoryIn) => post<Advisory>('/advisories', a),
+  liftAdvisory: async (zone: string) => {
+    const res = await fetch(`/api/advisories/${encodeURIComponent(zone)}`, { method: 'DELETE' })
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+  },
   advanceDelivery: (id: string) => post<HouseholdStatus>(`/deliveries/${encodeURIComponent(id)}/advance`, {}),
 }

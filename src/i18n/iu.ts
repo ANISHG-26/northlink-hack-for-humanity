@@ -44,4 +44,5 @@ export const iu: Strings = {
   report: en.report, // TODO: community translation review
   qr: en.qr, // TODO: community translation review
   driver: en.driver, // TODO: community translation review
+  dispatcher: en.dispatcher, // TODO: community translation review
 }

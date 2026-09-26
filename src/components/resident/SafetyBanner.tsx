@@ -27,6 +27,12 @@ export function SafetyBanner({ safety }: { safety: Safety }) {
           {safety.since && <> · {t.safety.since(fmt.date(safety.since))}</>}
         </p>
         <p className="mt-2 text-white">{detail}</p>
+        {safety.message && (
+          <p className="mt-3 rounded-xl bg-white/15 p-3 text-white">
+            <span className="block font-semibold">{t.dispatcher.dialog.messageFrom}</span>
+            {safety.message}
+          </p>
+        )}
       </div>
     </section>
   )

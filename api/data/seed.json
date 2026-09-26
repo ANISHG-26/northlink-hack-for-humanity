@@ -162,7 +162,7 @@
       "household_size": 9,
       "tank_capacity_l": 1000,
       "current_level_l": 432,
-      "last_delivery": "2026-09-23",
+      "last_delivery": "2026-09-22",
       "vulnerable": true,
       "last_truck_id": "T2",
       "vulnerable_type": "infant"
@@ -195,7 +195,7 @@
       "household_size": 8,
       "tank_capacity_l": 1000,
       "current_level_l": 428,
-      "last_delivery": "2026-09-23",
+      "last_delivery": "2026-09-22",
       "vulnerable": false,
       "last_truck_id": "T2",
       "vulnerable_type": null
@@ -206,7 +206,7 @@
       "household_size": 2,
       "tank_capacity_l": 1000,
       "current_level_l": 749,
-      "last_delivery": "2026-09-20",
+      "last_delivery": "2026-09-22",
       "vulnerable": true,
       "last_truck_id": "T2",
       "vulnerable_type": "elder"
@@ -634,12 +634,24 @@
       "next_sealift": "2027-07-15"
     }
   ],
-  "advisories": [
+  "advisories": [],
+  "baseline_weekly_illness": {
+    "A": 0.6,
+    "B": 0.5,
+    "C": 0.7,
+    "D": 0.5,
+    "E": 0.4,
+    "F": 0.4
+  },
+  "baseline_note": "Average stomach illness reports per zone per week over the past year (sample)",
+  "resident_reports": [
     {
+      "id": "W1",
+      "type": "water_quality",
+      "household_id": "C-21",
       "zone": "C",
-      "status": "boil",
-      "since": "2026-09-25",
-      "reason": "Illness reports in Zone C under investigation"
+      "timestamp": "2026-09-24T18:20:00-04:00",
+      "note": "Water looks cloudy and smells different"
     }
   ]
 }

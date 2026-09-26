@@ -38,3 +38,29 @@
   .tank-wave { animation: none; }
   * { transition-duration: 0ms !important; }
 }
+
+/* Zone labels on the dispatcher map: icon + zone letter + state text */
+.zone-label {
+  background: none;
+  border: none;
+}
+.zone-label > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+  background: #fff;
+  border: 2px solid;
+  border-radius: 999px;
+  padding: 2px 8px;
+  font: 600 14px/1.2 "Noto Sans", system-ui, sans-serif;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.2);
+}
+.zone-label b {
+  color: #0f2a44;
+  font-size: 16px;
+}
+.zone-label > span > span {
+  color: #1a202c;
+}
