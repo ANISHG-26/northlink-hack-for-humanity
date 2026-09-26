@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useState } from 'react'
 import { CircleCheckBig, Flame, LoaderCircle, Megaphone, OctagonX, TriangleAlert, X } from 'lucide-react'
 import { api } from '../api/client'
+import { loadOperations, type OperationsView } from '../api/operations'
 import type { Advisory, AttentionItem, Dashboard, OutbreakAlert, Zone } from '../api/types'
 import { OfflineBanner } from '../components/OfflineBanner'
 import { AdvisoryDialog } from '../components/dispatcher/AdvisoryDialog'
 import { AttentionList } from '../components/dispatcher/AttentionList'
-import { SensorCoverage, StaffingCard } from '../components/dispatcher/OpsPanels'
+import { CoverageCard, OpenRequests, SampleOpsBadge, ServiceHistoryCard } from '../components/dispatcher/OperationsPanel'
+import { SensorCoverage } from '../components/dispatcher/OpsPanels'
 import { StaffGate } from '../components/dispatcher/StaffGate'
 import { OutbreakPanel } from '../components/dispatcher/OutbreakPanel'
 import { SummaryCards } from '../components/dispatcher/SummaryCards'
@@ -28,6 +30,8 @@ export function DispatcherView() {
   const [error, setError] = useState(false)
   const [dialogZone, setDialogZone] = useState<Zone | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
+  const [ops, setOps] = useState<OperationsView | null>(null)
+  const queueVersion = useAppStore((s) => s.queueVersion)
 
   const load = useCallback(async () => {
     try {
@@ -36,6 +40,7 @@ export function DispatcherView() {
       setAlerts(b.data)
       setAdvisories(c.data)
       setAttention(e.data)
+      setOps(await loadOperations())
       setCachedAt(a.fromCache ? a.cachedAt : undefined)
       setError(false)
     } catch {
@@ -48,6 +53,11 @@ export function DispatcherView() {
     const id = window.setInterval(load, POLL_MS)
     return () => window.clearInterval(id)
   }, [load])
+
+  // Re-read when offline completions sync, so pending items move to completed.
+  useEffect(() => {
+    void loadOperations().then(setOps)
+  }, [queueVersion])
 
   async function lift(zone: Zone) {
     try {
@@ -87,6 +97,17 @@ export function DispatcherView() {
           <CircleCheckBig aria-hidden="true" className="h-6 w-6 shrink-0" />
           {notice}
         </p>
+      )}
+
+      {ops && (
+        <section aria-label="Truck operations" className="flex flex-col gap-5">
+          {ops.source === 'sample' && <SampleOpsBadge />}
+          <div className="grid gap-5 lg:grid-cols-[3fr_2fr] items-start">
+            <OpenRequests ops={ops} />
+            <CoverageCard ops={ops} />
+          </div>
+          <ServiceHistoryCard ops={ops} />
+        </section>
       )}
 
       <div className="grid gap-5 lg:grid-cols-[3fr_2fr] items-start">
@@ -148,7 +169,6 @@ export function DispatcherView() {
         <AttentionList items={attention} />
         <div className="flex flex-col gap-5">
           <SensorCoverage data={dash} />
-          <StaffingCard data={dash} />
         </div>
       </div>
 

@@ -1,8 +1,6 @@
-import type { MouseEvent } from 'react'
-import { ArrowRight, Calculator, CircleCheck, Radio, Truck, UserRound, Waves } from 'lucide-react'
+import { Calculator, CircleCheck, Radio, Waves } from 'lucide-react'
 import type { Dashboard } from '../../api/types'
 import { useT } from '../../i18n'
-import { useAppStore } from '../../store/useAppStore'
 
 /** How tank levels are known (sensor vs estimated) and possible leaks. */
 export function SensorCoverage({ data }: { data: Dashboard }) {
@@ -45,49 +43,6 @@ export function SensorCoverage({ data }: { data: Dashboard }) {
           ))}
         </ul>
       )}
-    </section>
-  )
-}
-
-/** Drivers available today vs needed, linking to Jobs & Training. */
-export function StaffingCard({ data }: { data: Dashboard }) {
-  const t = useT()
-  const j = t.jobs
-  const navigate = useAppStore((s) => s.navigate)
-  const s = data.staffing
-  const short = Math.max(s.drivers_needed - s.drivers_available, 0)
-  return (
-    <section aria-labelledby="staffing-heading" className="card">
-      <h2 id="staffing-heading" className="text-xl font-bold text-navy">
-        {j.staffingTitle}
-      </h2>
-      <ul className="mt-3 space-y-2">
-        <li className="flex items-center gap-2">
-          <UserRound aria-hidden="true" className="h-5 w-5 text-navy" />
-          <span className="text-lg font-semibold">{j.staffingDrivers(s.drivers_available, s.drivers_needed)}</span>
-        </li>
-        <li className="flex items-center gap-2">
-          <Truck aria-hidden="true" className="h-5 w-5 text-navy" />
-          <span>{j.staffingTrucks(s.trucks_in_service, s.trucks_total)}</span>
-        </li>
-      </ul>
-      {short > 0 && (
-        <p className="mt-3 inline-flex items-center gap-2 rounded-full border border-status-boil bg-amber-50 px-3 py-1 font-semibold text-status-boil">
-          <UserRound aria-hidden="true" className="h-5 w-5" />
-          {j.staffingShort(short)}
-        </p>
-      )}
-      <a
-        href="/jobs"
-        onClick={(e: MouseEvent) => {
-          e.preventDefault()
-          navigate('jobs')
-        }}
-        className="tap mt-3 flex items-center gap-2 font-semibold text-glacier underline-offset-4 hover:underline"
-      >
-        {j.staffingLink}
-        <ArrowRight aria-hidden="true" className="h-5 w-5" />
-      </a>
     </section>
   )
 }
