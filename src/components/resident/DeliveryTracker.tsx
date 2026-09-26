@@ -90,10 +90,9 @@ export function DeliveryTracker({ delivery, onAdvance }: { delivery: Delivery; o
                 className={`sm:text-center leading-tight ${active ? 'font-bold text-navy' : reached ? 'text-ink' : 'text-slate-500'}`}
               >
                 {t.delivery.stages[stage]}
-                <span className="sr-only">
-                  {' '}
-                  ({active ? t.delivery.current : done ? t.delivery.done : ''})
-                </span>
+                {(active || done) && (
+                  <span className="sr-only"> ({active ? t.delivery.current : t.delivery.done})</span>
+                )}
               </span>
             </li>
           )

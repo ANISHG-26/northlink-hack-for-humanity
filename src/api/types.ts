@@ -2,6 +2,7 @@
 // Dates are ISO strings ("YYYY-MM-DD") on the wire.
 
 export type Zone = 'A' | 'B' | 'C' | 'D' | 'E' | 'F'
+export type VulnerableType = 'elder' | 'infant' | 'medical'
 
 export interface Household {
   id: string // e.g. "A-12"
@@ -11,6 +12,7 @@ export interface Household {
   current_level_l: number
   last_delivery: string
   vulnerable: boolean // elders, infants, or medical needs
+  vulnerable_type: VulnerableType | null
   last_truck_id: string
 }
 
@@ -119,4 +121,37 @@ export interface Report extends ReportIn {
   id: string
   timestamp: string
   zone: Zone
+}
+
+// --- Driver route ------------------------------------------------------------
+
+export type Urgency = 'urgent' | 'soon' | 'ok'
+
+export interface RouteStop {
+  rank: number
+  household_id: string
+  zone: Zone
+  vulnerable_type: VulnerableType | null
+  advisory: WaterStatus | null
+  hours_until_empty: number
+  litres_left: number
+  litres_to_fill: number
+  urgency: Urgency
+  priority_score: number
+  fits_in_load: boolean
+  reason: string // English summary; UI builds a localized one from the fields
+}
+
+export interface Completion {
+  household_id: string
+  zone: Zone
+  truck_id: string
+  at: string // ISO datetime
+}
+
+export interface RouteToday {
+  truck: Truck
+  generated_at: string
+  stops: RouteStop[]
+  completed: Completion[]
 }

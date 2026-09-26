@@ -13,6 +13,8 @@ import type {
   LevelChoice,
   Report,
   ReportIn,
+  Completion,
+  RouteToday,
 } from './types'
 
 const CACHE_PREFIX = 'northlink:cache:'
@@ -23,7 +25,7 @@ interface CacheEntry<T> {
   cachedAt: string
 }
 
-interface QueuedPost {
+export interface QueuedPost {
   path: string
   body: unknown
   queuedAt: string
@@ -61,6 +63,7 @@ function writeQueue(q: QueuedPost[]): void {
   } catch {
     /* ignore */
   }
+  useAppStore.getState().bumpQueue()
 }
 
 /** fetch() that fails like a dropped connection while "Simulate offline" is on. */
@@ -115,27 +118,32 @@ async function post<T>(path: string, body: unknown): Promise<PostResult<T>> {
 }
 
 let flushing = false
-export async function flushQueue(): Promise<void> {
-  if (flushing) return
+/** Replay queued POSTs in order. Returns how many were sent. */
+export async function flushQueue(): Promise<number> {
+  if (flushing) return 0
   flushing = true
+  let sent = 0
   try {
     let q = readQueue()
     while (q.length) {
       try {
         await rawPost(q[0].path, q[0].body)
       } catch {
-        return // still offline
+        return sent // still offline
       }
+      useAppStore.getState().setOnline(true)
       q = q.slice(1)
       writeQueue(q)
+      sent++
     }
+    return sent
   } finally {
     flushing = false
   }
 }
 
-export function pendingCount(): number {
-  return readQueue().length
+export function pendingPosts(): QueuedPost[] {
+  return readQueue()
 }
 
 if (typeof window !== 'undefined') {
@@ -150,5 +158,12 @@ export const api = {
     post<HouseholdStatus>(`/households/${encodeURIComponent(id)}/level`, { level }),
   // Timestamp is set here so a report queued offline keeps its real time.
   report: (r: ReportIn) => post<Report>('/reports', { timestamp: new Date().toISOString(), ...r }),
+  routeToday: (truck: string) => get<RouteToday>(`/route/today?truck=${encodeURIComponent(truck)}`),
+  // Timestamp is when the driver filled the tank, even if it syncs later.
+  completeDelivery: (id: string, truckId: string) =>
+    post<Completion>(`/deliveries/${encodeURIComponent(id)}/complete`, {
+      truck_id: truckId,
+      timestamp: new Date().toISOString(),
+    }),
   advanceDelivery: (id: string) => post<HouseholdStatus>(`/deliveries/${encodeURIComponent(id)}/advance`, {}),
 }

@@ -10,8 +10,13 @@ if str(ROOT) not in sys.path:
 from fastapi import FastAPI, HTTPException  # noqa: E402
 
 from api.ai.forecast import Reading, forecast  # noqa: E402
+from api.ai.routing import StopInput, rank_stops  # noqa: E402
 from api.models import (  # noqa: E402
     DELIVERY_STAGES,
+    CompleteIn,
+    Completion,
+    RouteStop,
+    RouteToday,
     Delivery,
     Forecast,
     Health,
@@ -36,9 +41,26 @@ def get_household(household_id: str) -> Household:
     return h
 
 
+def zone_advisory(zone: str):
+    return next((a for a in state.seed.advisories if a.zone == zone), None)
+
+
+def household_forecast(h: Household):
+    return forecast(h.household_size, h.tank_capacity_l, state.readings[h.id], now())
+
+
+def get_truck(truck: str):
+    """Accept "2", "T2" or "t2"."""
+    key = truck.upper() if truck.upper().startswith("T") else f"T{truck}"
+    t = state.trucks.get(key)
+    if not t:
+        raise HTTPException(404, f"Truck {truck} not found")
+    return t
+
+
 def build_status(h: Household) -> HouseholdStatus:
-    f = forecast(h.household_size, h.tank_capacity_l, state.readings[h.id], now())
-    advisory = next((a for a in state.seed.advisories if a.zone == h.zone), None)
+    f = household_forecast(h)
+    advisory = zone_advisory(h.zone)
     d = state.delivery(h.id)
     truck = state.trucks[h.last_truck_id]
     return HouseholdStatus(
@@ -113,3 +135,39 @@ def advance_delivery(household_id: str) -> HouseholdStatus:
     h = get_household(household_id)
     state.advance_delivery(h.id)
     return build_status(h)
+
+
+@app.get("/api/route/today", response_model=RouteToday)
+def route_today(truck: str = "2") -> RouteToday:
+    t = get_truck(truck)
+    today = now().date()
+    done_today = [c for c in state.completions if c.truck_id == t.id and c.at.date() == today]
+    done_ids = {c.household_id for c in state.completions if c.at.date() == today}
+
+    inputs = []
+    for h in state.households.values():
+        if h.zone not in t.zones or h.id in done_ids:
+            continue
+        f = household_forecast(h)
+        adv = zone_advisory(h.zone)
+        inputs.append(
+            StopInput(
+                household_id=h.id,
+                zone=h.zone,
+                hours_until_empty=f.days_left * 24,
+                litres_left=f.litres_left,
+                tank_capacity_l=h.tank_capacity_l,
+                vulnerable_type=h.vulnerable_type,
+                advisory=adv.status if adv and adv.status != "safe" else None,
+            )
+        )
+    stops = [RouteStop(**vars(s)) for s in rank_stops(inputs, t.capacity_l)]
+    return RouteToday(truck=t, generated_at=now(), stops=stops, completed=sorted(done_today, key=lambda c: c.at, reverse=True))
+
+
+@app.post("/api/deliveries/{household_id}/complete", response_model=Completion)
+def complete_delivery(household_id: str, body: CompleteIn | None = None) -> Completion:
+    h = get_household(household_id)
+    body = body or CompleteIn()
+    truck_id = get_truck(body.truck_id).id if body.truck_id else h.last_truck_id
+    return state.complete_delivery(h.id, truck_id, body.timestamp or now())

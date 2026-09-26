@@ -9,7 +9,7 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from api.ai.forecast import Reading
-from api.models import DELIVERY_STAGES, Household, Report, SeedData
+from api.models import DELIVERY_STAGES, Completion, Household, Report, SeedData
 
 # Inukjuak is on Eastern Time.
 TZ = ZoneInfo("America/Toronto")
@@ -52,6 +52,7 @@ class State:
         self.households: dict[str, Household] = {h.id: h for h in self.seed.households}
         self.trucks = {t.id: t for t in self.seed.trucks}
         self.reports: list[Report] = []
+        self.completions: list[Completion] = []
 
         # Level readings: last delivery (tank full) + the seeded current level.
         self.readings: dict[str, list[Reading]] = {}
@@ -91,6 +92,21 @@ class State:
         d["stage_index"] = idx
         d["updated_at"] = t
         return d
+
+    def complete_delivery(self, household_id: str, truck_id: str, at: datetime) -> Completion:
+        """Driver filled the tank. Idempotent per household per day (queued replays may repeat)."""
+        t = now()
+        at = min(at.astimezone(TZ), t)
+        for c in self.completions:
+            if c.household_id == household_id and c.at.date() == at.date():
+                return c
+        h = self.households[household_id]
+        self.readings[household_id].append(Reading(at, h.tank_capacity_l))
+        d = self.delivery(household_id)
+        d.update(stage_index=DELIVERY_STAGES.index("delivered"), eta=at, updated_at=t)
+        c = Completion(household_id=household_id, zone=h.zone, truck_id=truck_id, at=at)
+        self.completions.append(c)
+        return c
 
 
 state = State()

@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { flushQueue, pendingPosts } from './api/client'
 import { Header } from './components/Header'
 import { Tabs } from './components/Tabs'
 import { Footer } from './components/Footer'
@@ -24,6 +25,17 @@ export default function App() {
   useEffect(() => {
     document.documentElement.lang = LANGUAGES.find((l) => l.code === lang)?.htmlLang ?? 'en'
   }, [lang])
+
+  // Replay queued offline actions automatically whenever we might be back online.
+  useEffect(() => {
+    const tick = () => {
+      const s = useAppStore.getState()
+      if (!s.simulateOffline && pendingPosts().length) void flushQueue()
+    }
+    tick()
+    const id = window.setInterval(tick, 5000)
+    return () => window.clearInterval(id)
+  }, [])
 
   return (
     <div className="min-h-screen flex flex-col">

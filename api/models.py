@@ -15,6 +15,7 @@ class Household(BaseModel):
     current_level_l: int
     last_delivery: date
     vulnerable: bool  # elders, infants, or medical needs
+    vulnerable_type: Literal["elder", "infant", "medical"] | None = None
     last_truck_id: str
 
 
@@ -128,6 +129,45 @@ class Report(ReportIn):
     id: str
     timestamp: datetime
     zone: Zone
+
+
+# --- Driver route ------------------------------------------------------------
+
+Urgency = Literal["urgent", "soon", "ok"]
+
+
+class RouteStop(BaseModel):
+    rank: int
+    household_id: str
+    zone: Zone
+    vulnerable_type: Literal["elder", "infant", "medical"] | None
+    advisory: WaterStatus | None
+    hours_until_empty: float
+    litres_left: int
+    litres_to_fill: int
+    urgency: Urgency
+    priority_score: float
+    fits_in_load: bool
+    reason: str
+
+
+class Completion(BaseModel):
+    household_id: str
+    zone: Zone
+    truck_id: str
+    at: datetime
+
+
+class RouteToday(BaseModel):
+    truck: Truck
+    generated_at: datetime
+    stops: list[RouteStop]
+    completed: list[Completion]
+
+
+class CompleteIn(BaseModel):
+    truck_id: str | None = None
+    timestamp: datetime | None = None
 
 
 class Health(BaseModel):

@@ -10,7 +10,8 @@
       "current_level_l": 40,
       "last_delivery": "2026-09-21",
       "vulnerable": false,
-      "last_truck_id": "T1"
+      "last_truck_id": "T1",
+      "vulnerable_type": null
     },
     {
       "id": "A-07",
@@ -20,7 +21,8 @@
       "current_level_l": 941,
       "last_delivery": "2026-09-26",
       "vulnerable": false,
-      "last_truck_id": "T1"
+      "last_truck_id": "T1",
+      "vulnerable_type": null
     },
     {
       "id": "A-08",
@@ -30,7 +32,8 @@
       "current_level_l": 779,
       "last_delivery": "2026-09-22",
       "vulnerable": false,
-      "last_truck_id": "T1"
+      "last_truck_id": "T1",
+      "vulnerable_type": null
     },
     {
       "id": "A-09",
@@ -40,7 +43,8 @@
       "current_level_l": 80,
       "last_delivery": "2026-09-22",
       "vulnerable": false,
-      "last_truck_id": "T1"
+      "last_truck_id": "T1",
+      "vulnerable_type": null
     },
     {
       "id": "A-15",
@@ -50,7 +54,8 @@
       "current_level_l": 582,
       "last_delivery": "2026-09-21",
       "vulnerable": true,
-      "last_truck_id": "T1"
+      "last_truck_id": "T1",
+      "vulnerable_type": "elder"
     },
     {
       "id": "A-16",
@@ -60,7 +65,8 @@
       "current_level_l": 976,
       "last_delivery": "2026-09-26",
       "vulnerable": false,
-      "last_truck_id": "T1"
+      "last_truck_id": "T1",
+      "vulnerable_type": null
     },
     {
       "id": "A-18",
@@ -70,7 +76,8 @@
       "current_level_l": 565,
       "last_delivery": "2026-09-22",
       "vulnerable": false,
-      "last_truck_id": "T1"
+      "last_truck_id": "T1",
+      "vulnerable_type": null
     },
     {
       "id": "B-06",
@@ -80,7 +87,8 @@
       "current_level_l": 926,
       "last_delivery": "2026-09-26",
       "vulnerable": false,
-      "last_truck_id": "T1"
+      "last_truck_id": "T1",
+      "vulnerable_type": null
     },
     {
       "id": "B-08",
@@ -90,7 +98,8 @@
       "current_level_l": 467,
       "last_delivery": "2026-09-20",
       "vulnerable": false,
-      "last_truck_id": "T1"
+      "last_truck_id": "T1",
+      "vulnerable_type": null
     },
     {
       "id": "B-13",
@@ -100,7 +109,8 @@
       "current_level_l": 834,
       "last_delivery": "2026-09-25",
       "vulnerable": false,
-      "last_truck_id": "T1"
+      "last_truck_id": "T1",
+      "vulnerable_type": null
     },
     {
       "id": "B-19",
@@ -110,7 +120,8 @@
       "current_level_l": 108,
       "last_delivery": "2026-09-21",
       "vulnerable": false,
-      "last_truck_id": "T1"
+      "last_truck_id": "T1",
+      "vulnerable_type": null
     },
     {
       "id": "B-24",
@@ -120,7 +131,8 @@
       "current_level_l": 836,
       "last_delivery": "2026-09-25",
       "vulnerable": false,
-      "last_truck_id": "T1"
+      "last_truck_id": "T1",
+      "vulnerable_type": null
     },
     {
       "id": "B-25",
@@ -130,7 +142,8 @@
       "current_level_l": 120,
       "last_delivery": "2026-09-21",
       "vulnerable": false,
-      "last_truck_id": "T1"
+      "last_truck_id": "T1",
+      "vulnerable_type": null
     },
     {
       "id": "B-35",
@@ -140,7 +153,8 @@
       "current_level_l": 892,
       "last_delivery": "2026-09-25",
       "vulnerable": false,
-      "last_truck_id": "T1"
+      "last_truck_id": "T1",
+      "vulnerable_type": null
     },
     {
       "id": "C-05",
@@ -150,7 +164,8 @@
       "current_level_l": 432,
       "last_delivery": "2026-09-23",
       "vulnerable": true,
-      "last_truck_id": "T2"
+      "last_truck_id": "T2",
+      "vulnerable_type": "infant"
     },
     {
       "id": "C-12",
@@ -160,7 +175,8 @@
       "current_level_l": 520,
       "last_delivery": "2026-09-24",
       "vulnerable": true,
-      "last_truck_id": "T2"
+      "last_truck_id": "T2",
+      "vulnerable_type": "infant"
     },
     {
       "id": "C-14",
@@ -170,7 +186,8 @@
       "current_level_l": 258,
       "last_delivery": "2026-09-22",
       "vulnerable": false,
-      "last_truck_id": "T2"
+      "last_truck_id": "T2",
+      "vulnerable_type": null
     },
     {
       "id": "C-21",
@@ -180,7 +197,8 @@
       "current_level_l": 428,
       "last_delivery": "2026-09-23",
       "vulnerable": false,
-      "last_truck_id": "T2"
+      "last_truck_id": "T2",
+      "vulnerable_type": null
     },
     {
       "id": "C-26",
@@ -190,7 +208,8 @@
       "current_level_l": 749,
       "last_delivery": "2026-09-20",
       "vulnerable": true,
-      "last_truck_id": "T2"
+      "last_truck_id": "T2",
+      "vulnerable_type": "elder"
     },
     {
       "id": "C-32",
@@ -200,7 +219,8 @@
       "current_level_l": 513,
       "last_delivery": "2026-09-20",
       "vulnerable": false,
-      "last_truck_id": "T2"
+      "last_truck_id": "T2",
+      "vulnerable_type": null
     },
     {
       "id": "C-37",
@@ -210,7 +230,8 @@
       "current_level_l": 274,
       "last_delivery": "2026-09-23",
       "vulnerable": false,
-      "last_truck_id": "T2"
+      "last_truck_id": "T2",
+      "vulnerable_type": null
     },
     {
       "id": "D-01",
@@ -220,7 +241,8 @@
       "current_level_l": 60,
       "last_delivery": "2026-09-22",
       "vulnerable": false,
-      "last_truck_id": "T2"
+      "last_truck_id": "T2",
+      "vulnerable_type": null
     },
     {
       "id": "D-08",
@@ -230,7 +252,8 @@
       "current_level_l": 365,
       "last_delivery": "2026-09-24",
       "vulnerable": false,
-      "last_truck_id": "T2"
+      "last_truck_id": "T2",
+      "vulnerable_type": null
     },
     {
       "id": "D-11",
@@ -240,7 +263,8 @@
       "current_level_l": 699,
       "last_delivery": "2026-09-24",
       "vulnerable": false,
-      "last_truck_id": "T2"
+      "last_truck_id": "T2",
+      "vulnerable_type": null
     },
     {
       "id": "D-19",
@@ -250,7 +274,8 @@
       "current_level_l": 875,
       "last_delivery": "2026-09-26",
       "vulnerable": true,
-      "last_truck_id": "T2"
+      "last_truck_id": "T2",
+      "vulnerable_type": "infant"
     },
     {
       "id": "D-22",
@@ -260,7 +285,8 @@
       "current_level_l": 108,
       "last_delivery": "2026-09-20",
       "vulnerable": true,
-      "last_truck_id": "T2"
+      "last_truck_id": "T2",
+      "vulnerable_type": "medical"
     },
     {
       "id": "D-28",
@@ -270,7 +296,8 @@
       "current_level_l": 876,
       "last_delivery": "2026-09-26",
       "vulnerable": false,
-      "last_truck_id": "T2"
+      "last_truck_id": "T2",
+      "vulnerable_type": null
     },
     {
       "id": "D-30",
@@ -280,7 +307,8 @@
       "current_level_l": 59,
       "last_delivery": "2026-09-20",
       "vulnerable": false,
-      "last_truck_id": "T2"
+      "last_truck_id": "T2",
+      "vulnerable_type": null
     },
     {
       "id": "E-11",
@@ -290,7 +318,8 @@
       "current_level_l": 545,
       "last_delivery": "2026-09-23",
       "vulnerable": false,
-      "last_truck_id": "T3"
+      "last_truck_id": "T3",
+      "vulnerable_type": null
     },
     {
       "id": "E-13",
@@ -300,7 +329,8 @@
       "current_level_l": 534,
       "last_delivery": "2026-09-23",
       "vulnerable": true,
-      "last_truck_id": "T3"
+      "last_truck_id": "T3",
+      "vulnerable_type": "elder"
     },
     {
       "id": "E-14",
@@ -310,7 +340,8 @@
       "current_level_l": 150,
       "last_delivery": "2026-09-22",
       "vulnerable": true,
-      "last_truck_id": "T3"
+      "last_truck_id": "T3",
+      "vulnerable_type": "infant"
     },
     {
       "id": "E-17",
@@ -320,7 +351,8 @@
       "current_level_l": 686,
       "last_delivery": "2026-09-21",
       "vulnerable": true,
-      "last_truck_id": "T3"
+      "last_truck_id": "T3",
+      "vulnerable_type": "medical"
     },
     {
       "id": "E-28",
@@ -330,7 +362,8 @@
       "current_level_l": 737,
       "last_delivery": "2026-09-20",
       "vulnerable": true,
-      "last_truck_id": "T3"
+      "last_truck_id": "T3",
+      "vulnerable_type": "elder"
     },
     {
       "id": "E-34",
@@ -340,7 +373,8 @@
       "current_level_l": 411,
       "last_delivery": "2026-09-23",
       "vulnerable": false,
-      "last_truck_id": "T3"
+      "last_truck_id": "T3",
+      "vulnerable_type": null
     },
     {
       "id": "F-16",
@@ -350,7 +384,8 @@
       "current_level_l": 890,
       "last_delivery": "2026-09-26",
       "vulnerable": false,
-      "last_truck_id": "T3"
+      "last_truck_id": "T3",
+      "vulnerable_type": null
     },
     {
       "id": "F-27",
@@ -360,7 +395,8 @@
       "current_level_l": 561,
       "last_delivery": "2026-09-23",
       "vulnerable": false,
-      "last_truck_id": "T3"
+      "last_truck_id": "T3",
+      "vulnerable_type": null
     },
     {
       "id": "F-31",
@@ -370,7 +406,8 @@
       "current_level_l": 914,
       "last_delivery": "2026-09-26",
       "vulnerable": false,
-      "last_truck_id": "T3"
+      "last_truck_id": "T3",
+      "vulnerable_type": null
     },
     {
       "id": "F-37",
@@ -380,7 +417,8 @@
       "current_level_l": 822,
       "last_delivery": "2026-09-25",
       "vulnerable": false,
-      "last_truck_id": "T3"
+      "last_truck_id": "T3",
+      "vulnerable_type": null
     },
     {
       "id": "F-38",
@@ -390,7 +428,8 @@
       "current_level_l": 830,
       "last_delivery": "2026-09-25",
       "vulnerable": false,
-      "last_truck_id": "T3"
+      "last_truck_id": "T3",
+      "vulnerable_type": null
     },
     {
       "id": "F-39",
@@ -400,7 +439,8 @@
       "current_level_l": 95,
       "last_delivery": "2026-09-23",
       "vulnerable": true,
-      "last_truck_id": "T3"
+      "last_truck_id": "T3",
+      "vulnerable_type": "infant"
     }
   ],
   "trucks": [

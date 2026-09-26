@@ -12,10 +12,13 @@ interface AppState {
   view: View
   /** Demo switch: make every API call behave as if the network is down. */
   simulateOffline: boolean
+  /** Bumped whenever the offline POST queue changes, so views can re-read it. */
+  queueVersion: number
   setOnline: (v: boolean) => void
   setLang: (l: Lang) => void
   setView: (v: View) => void
   setSimulateOffline: (v: boolean) => void
+  bumpQueue: () => void
 }
 
 function loadLang(): Lang {
@@ -42,11 +45,15 @@ export const useAppStore = create<AppState>((set) => ({
   },
   setView: (view) => set({ view }),
   simulateOffline: false,
+  queueVersion: 0,
+  bumpQueue: () => set((s) => ({ queueVersion: s.queueVersion + 1 })),
   setSimulateOffline: (simulateOffline) =>
     set({ simulateOffline, isOnline: simulateOffline ? false : typeof navigator === 'undefined' || navigator.onLine }),
 }))
 
 if (typeof window !== 'undefined') {
-  window.addEventListener('online', () => useAppStore.getState().setOnline(true))
+  window.addEventListener('online', () => {
+    if (!useAppStore.getState().simulateOffline) useAppStore.getState().setOnline(true)
+  })
   window.addEventListener('offline', () => useAppStore.getState().setOnline(false))
 }
