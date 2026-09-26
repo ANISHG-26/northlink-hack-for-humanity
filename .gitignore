@@ -9,9 +9,11 @@ venv
 __pycache__/
 *.pyc
 .pytest_cache/
+.tmp/
 
 # Secrets and local config
 .env*
+!.env.example
 .vercel/
 .claude/
 

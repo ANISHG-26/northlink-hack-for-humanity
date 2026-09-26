@@ -4,6 +4,7 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "test": "node --test tests/client.test.mjs",
     "dev": "vite",
     "dev:api": "python -m uvicorn api.index:app --reload --port 8000",
     "dev:all": "concurrently -k -n web,api -c cyan,magenta \"npm:dev\" \"npm:dev:api\"",
