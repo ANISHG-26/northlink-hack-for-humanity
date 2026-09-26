@@ -18,6 +18,7 @@ import {
 import { api } from '../api/client'
 import type { Partner, PartStatus, SealiftPlan } from '../api/types'
 import { OfflineBanner } from '../components/OfflineBanner'
+import { TruckRepairs } from '../components/parts/TruckRepairs'
 import { useT } from '../i18n'
 import { useFormat } from '../i18n/format'
 import { useAppStore } from '../store/useAppStore'
@@ -283,6 +284,9 @@ export function PartsView() {
           </table>
         </div>
       </section>
+
+      {/* Truck breakdowns and repair parts (#7) */}
+      <TruckRepairs parts={plan.parts} />
 
       {/* Partners */}
       <section aria-labelledby="partners-heading">
