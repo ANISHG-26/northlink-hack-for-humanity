@@ -549,3 +549,9 @@ def sealift_plan() -> SealiftPlan:
 @app.get("/api/partners", response_model=list[Partner])
 def partners() -> list[Partner]:
     return state.seed.partners
+
+
+# --- Truck breakdowns and repair parts (#7) -----------------------------------------
+from api.breakdowns import router as breakdowns_router  # noqa: E402
+
+app.include_router(breakdowns_router)
