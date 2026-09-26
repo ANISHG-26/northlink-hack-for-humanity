@@ -38,7 +38,7 @@ Northlink is the bridge until then, and its data supports the pipeline plan.
 
 The landing page and My home view follow the approved design reference: Noto Sans, Hudson Bay navy `#0B2A3F`,
 sea-ice background `#F4F8FA`, white 20px-radius cards, CSS tank gauges, and a delivery stepper
-(`src/styles/reference.css`). The hero uses `public/hero.jpg` when present, otherwise a calm Arctic-dawn gradient.
+(`src/styles/reference.css`). The landing page uses the background, NorthLink logo, and water/sanitation illustration from PR #13.
 
 ## Architecture
 
@@ -136,6 +136,10 @@ python -m pytest
 
 Import the repo in Vercel and deploy. `vercel.json` builds the Vite app from `dist/` and serves
 `api/index.py` as a Python function at `/api/*`. No environment variables or keys are needed.
+
+The production site is `https://northlink-hack-for-humanity.vercel.app`. A GitHub Actions workflow
+deploys every push to `main` to the existing Vercel project. It needs the repository Actions secret
+`VERCEL_TOKEN`; the project and team IDs are in the workflow.
 
 ## Important notes
 
