@@ -8,9 +8,9 @@ Show a dispatcher responding to a driver absence, a truck problem, and a househo
 
 ## Existing starting point
 
-The `app-prototype` branch already has a Vite/React/TypeScript front end, a FastAPI API, driver and dispatcher views, household reports, water and sewage route ranking, completion logging, a parts forecast, sample data, and a Vercel configuration. Keep these pieces. The prototype initially had unrelated Git history, but it has now merged `main` and [PR #11](https://github.com/ANISHG-26/northlink-hack-for-humanity/pull/11) is open. Mariella can finish the UI on that PR. Michael can branch from the current `app-prototype` tip; after #11 merges, his backend PR can target `main` cleanly.
+The prototype is now on `main` through merged [PR #11](https://github.com/ANISHG-26/northlink-hack-for-humanity/pull/11). It has a Vite/React/TypeScript front end, a FastAPI API, driver and dispatcher views, household reports, water and sewage route ranking, completion logging, a parts forecast, sample data, and a Vercel configuration. Keep these pieces. Mariella and Michael should each branch from current `main` and open one new focused PR for their remaining demo work.
 
-Gaps for this demo: staffing numbers are constants; truck status is seeded; there is no breakdown/cause log; completions have no linked request or response-time metric; there is no source/drop-off water sample record. API state is in Python process memory and may reset between Vercel function invocations. The browser's offline queue is local to one device, and `flushQueue()` currently discards a queued POST even if the server returns an error status; fix that before relying on offline completion. The existing build succeeds with Node 18 here, but `concurrently` in the lockfile declares Node 22+, so use Node 22 for local development and deployment. The build also warns about an unresolved `/hero.jpg` reference; verify the actual hero asset path.
+Gaps for this demo: staffing numbers are constants; truck status is seeded; there is no breakdown/cause log; completions have no linked request or response-time metric; there is no source/drop-off water sample record. API state is in Python process memory and may reset between Vercel function invocations. The browser's offline queue is local to one device, and `flushQueue()` currently discards a queued POST even if the server returns an error status; fix that before relying on offline completion. The latest prototype build succeeds with Node 18 here, but `concurrently` in the lockfile declares Node 22+, so use Node 22 for local development and deployment. The hero references an absent `public/hero.jpg` but has a gradient fallback; confirm that this is the intended demo appearance. The latest build warns only about a JavaScript chunk above 500 kB, and its 40 Python tests pass.
 
 ## Proposed architecture
 
@@ -39,18 +39,18 @@ The UI can use fixed mock responses matching this contract while API work procee
 
 | Time (Toronto) | Michael: API and data | Mariella: UI and demo | Shared gate |
 | --- | --- | --- | --- |
-| 2:15–2:30 | Branch from the current prototype tip; send example operations JSON/types to Mariella. | Continue [PR #11](https://github.com/ANISHG-26/northlink-hack-for-humanity/pull/11); build against mock operations JSON. | Agree on one contract and one PR per developer. |
-| 2:30–3:05 | Implement service event/history/response metrics plus simple availability/readiness in seeded demo state. | Add dispatcher request/history/coverage cards and driver completion feedback. | Pair on one sample water and one sewage flow. |
-| 3:05–3:15 | Connect API to UI and open the backend PR after #11 merges. | Verify mobile and desktop flow; prepare seeded absence/breakdown scenario. | `npm run build`, `python -m pytest`, manual API/UI smoke test. |
+| 2:20–2:35 | Branch from current `main`; send example operations JSON/types to Mariella. | Branch from current `main`; build against mock operations JSON. | Agree on one contract and one PR per developer. |
+| 2:35–3:05 | Implement service event/history/response metrics plus simple availability/readiness in seeded demo state. | Add dispatcher request/history/coverage cards and driver completion feedback. | Pair on one sample water and one sewage flow. |
+| 3:05–3:15 | Connect API to UI and open the backend PR. | Verify mobile and desktop flow; open the UI PR and prepare the seeded absence/breakdown scenario. | `npm run build`, `python -m pytest`, manual API/UI smoke test. |
 | 3:15–3:30 | Freeze features, help triage. | Rehearse demo and screenshots. | Review both PRs; DevOps teammate imports Vercel project if available. Use local API for write-through demo until persistent storage exists. |
 
-The times are targets; stop adding features at 3:15 to preserve a working demo. Michael owns the API in one PR; Mariella owns the prototype and UI in PR #11. Each asks for teammate review before merge. A DevOps teammate may handle Vercel setup, but neither developer should wait for it to build the local demo.
+The times are targets; stop adding features at 3:15 to preserve a working demo. Michael owns the API in one new PR; Mariella owns the UI in one new PR. Each asks for teammate review before merge. A DevOps teammate may handle Vercel setup, but neither developer should wait for it to build the local demo.
 
 ## GitHub work items
 
 | Priority | Issue | Owner |
 | --- | --- | --- |
-| P0 | [#2 Prototype and truck operations UI](https://github.com/ANISHG-26/northlink-hack-for-humanity/issues/2) | Mariella, one PR (#11) |
+| P0 | [#2 Truck operations UI](https://github.com/ANISHG-26/northlink-hack-for-humanity/issues/2) | Mariella, one new PR |
 | P0 | [#3 Service tracking and coverage API](https://github.com/ANISHG-26/northlink-hack-for-humanity/issues/3) | Michael, one PR |
 | P0 | [#6 Deploy and smoke test](https://github.com/ANISHG-26/northlink-hack-for-humanity/issues/6) | DevOps teammate if available |
 | P1 | [#7 Breakdowns and parts](https://github.com/ANISHG-26/northlink-hack-for-humanity/issues/7) | Michael API, Mariella UI |
