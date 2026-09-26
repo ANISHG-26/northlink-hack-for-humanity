@@ -28,11 +28,17 @@ Northlink is the bridge until then, and its data supports the pipeline plan.
 | View | What it does |
 | --- | --- |
 | **Home** (`/`) | Landing page with "Why now", entry points to every view, "Explore the Map". |
-| **Resident** (`/resident`) | Official advisory banner (source, date issued, last checked); clean water and wastewater tanks side by side ("About 3 days of water left", "Full in about 2 days", or "Wastewater pickup needed"); sensor or estimated badge; simulated tank sensor page; package-style delivery tracker; update tank level; report a problem with buttons or in your own words; household QR code. |
+| **My home** (`/resident`) | Official advisory banner (source, date issued, last checked); clean water and wastewater tanks side by side ("About 3 days of water left", "Full in about 2 days", or "Wastewater pickup needed"); sensor or estimated badge; simulated tank sensor page; package-style delivery tracker; update tank level; report a problem with buttons or in your own words; household QR code. |
 | **Driver** (`/driver`) | Today's route ranked by urgency, with water deliveries and wastewater pickups; "Why this order"; scan tank QR or enter house code; offline queue with "Simulate offline". |
-| **Dispatcher** (`/dispatcher`) | Summary cards; Leaflet/OpenStreetMap zone map; **signals for staff review** (illness clusters); **staff mode** (demo PIN) to issue or lift advisories; reports needing attention; sensor coverage and possible leaks; staffing today. |
+| **Staff** (`/dispatcher`) | Summary cards; Leaflet/OpenStreetMap zone map; **signals for staff review** (illness clusters); **staff mode** (demo PIN) to issue or lift advisories; reports needing attention; sensor coverage and possible leaks; staffing today. |
 | **Parts** (`/parts`) | Sealift order deadline, parts at risk, generated order list (air freight + sealift), parts table, sample partner directory with editable message drafts. |
 | **Jobs** (`/jobs`) | Local roles, skills, training pathways, career ladder, "I'm interested" form (saved on the device only). |
+
+## Design
+
+The landing page and My home view follow the approved design reference: Noto Sans, Hudson Bay navy `#0B2A3F`,
+sea-ice background `#F4F8FA`, white 20px-radius cards, CSS tank gauges, and a delivery stepper
+(`src/styles/reference.css`). The hero uses `public/hero.jpg` when present, otherwise a calm Arctic-dawn gradient.
 
 ## Architecture
 
