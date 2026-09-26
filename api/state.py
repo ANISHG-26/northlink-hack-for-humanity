@@ -95,6 +95,8 @@ class State:
 
         # Delivery tracker per household (created lazily).
         self.deliveries: dict[str, dict] = {}
+        from api.operations import seed_operations
+        seed_operations(self, start)
 
     # --- simulated tank sensors -------------------------------------------------
 
@@ -145,6 +147,7 @@ class State:
         # Several samples so the median filter treats it as a real change, not a spike.
         for i in range(3):
             self.sensor_raw[household_id].append(Sample(at + timedelta(seconds=i), self._noisy(h, litres)))
+        self.sensor_raw[household_id].sort(key=lambda sample: sample.at)
 
     def live_weight(self, household_id: str) -> float:
         h = self.households[household_id]
@@ -194,22 +197,39 @@ class State:
         d["updated_at"] = t
         return d
 
-    def complete(self, household_id: str, truck_id: str, at: datetime, service: str) -> Completion:
+    def complete(self, household_id: str, truck_id: str, at: datetime, service: str,
+                 event_id: str, service_type: str | None = None, run: str | None = None) -> Completion:
         """Driver filled the clean tank or emptied the wastewater tank.
-        Idempotent per household, service and day (queued offline replays may repeat)."""
+        Idempotent by event ID; separate visits on the same day remain distinct."""
+        from fastapi import HTTPException
+        from api.operations import run_id
         t = now()
         at = min(at.astimezone(TZ), t)
+        service_type = service_type or ("water" if service == "water" else "sewage_full")
+        run = run or run_id(truck_id, at)
         for c in self.completions:
-            if c.household_id == household_id and c.service == service and c.at.date() == at.date():
+            if c.event_id == event_id:
+                if (c.household_id, c.truck_id, c.service_type, c.run_id, c.at) != (household_id, truck_id, service_type, run, at):
+                    raise HTTPException(409, "Event ID already belongs to another completion")
                 return c
         h = self.households[household_id]
         if service == "sewage":
+            # Replace the synthetic startup estimate on the first recorded pickup.
+            # Later offline pickups are ordered by event time, never arrival time.
+            if not any(c.household_id == household_id and c.service == "sewage" for c in self.completions):
+                self.sewage[household_id] = []
             self.sewage[household_id].append(Reading(at, 0))
+            h.last_sewage_pickup = max(h.last_sewage_pickup or at.date(), at.date())
         else:
             self.record_fill(household_id, at)
             d = self.delivery(household_id)
-            d.update(stage_index=DELIVERY_STAGES.index("delivered"), eta=at, updated_at=t)
-        c = Completion(household_id=household_id, zone=h.zone, truck_id=truck_id, service=service, at=at)
+            if at >= d["updated_at"] or d["stage_index"] != DELIVERY_STAGES.index("delivered"):
+                d.update(stage_index=DELIVERY_STAGES.index("delivered"), eta=at, updated_at=at)
+            if at.date() >= h.last_delivery:
+                h.last_delivery = at.date()
+                h.last_truck_id = truck_id
+        c = Completion(event_id=event_id, household_id=household_id, zone=h.zone, truck_id=truck_id,
+            service=service, service_type=service_type, at=at, completed_at=at, run_id=run)
         self.completions.append(c)
         return c
 
