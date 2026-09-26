@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-size: 16px;
+  }
+  body {
+    @apply bg-bg text-ink font-sans text-base antialiased;
+  }
+  /* Visible focus ring on every interactive element */
+  :focus-visible {
+    outline: 3px solid #2b6cb0;
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+}
+
+@layer components {
+  .tap {
+    @apply min-h-tap min-w-tap;
+  }
+  .card {
+    @apply bg-card rounded-xl shadow-sm border border-slate-200 p-5;
+  }
+}
