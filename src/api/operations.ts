@@ -1,9 +1,9 @@
 // Truck operations: open requests, service history, response time, and coverage (#2).
 //
-// Contract proposed in docs/operations-contract.md for the #3 API. Until
-// GET /api/operations exists, the UI uses the SAMPLE response below and merges
-// in real completions from the existing route endpoint, so a driver's
-// completion still shows on the dispatcher after refresh.
+// Reads GET /api/operations (the #3 backend, api/operations_api.py) and adapts
+// it to the shape these screens use. If that endpoint is unreachable, the UI
+// falls back to the SAMPLE response below and merges in real completions from
+// the route endpoint, so a driver's completion still shows after refresh.
 import { api, pendingPosts } from './client'
 import type { Completion, Zone } from './types'
 
@@ -15,7 +15,7 @@ export interface ServiceRequest {
   household_id: string
   zone: Zone
   service: RequestService
-  source: 'resident' | 'sensor' | 'staff'
+  source: 'resident' | 'sensor' | 'staff' | 'driver' | 'dispatcher' | 'sample'
   reported_at: string
   status: 'open' | 'completed'
 }
@@ -49,7 +49,11 @@ export interface Coverage {
   /** Team assumption: one water truck covers up to this many households. Coverage, not daily throughput. */
   households_per_truck: number
   water_households_total: number
+  /** Households the in-service water trucks can cover, when the API computes it. */
+  water_households_covered?: number
   shortfall: boolean
+  /** Plain-language coverage assumption from the API, when provided. */
+  assumption?: string
 }
 
 export interface OperationsResponse {
@@ -170,12 +174,109 @@ export function medianResponse(completed: CompletedRequest[], service: VisitServ
   return xs.length % 2 ? xs[mid] : Math.round((xs[mid - 1] + xs[mid]) / 2)
 }
 
+// --- #3 API response (api/models.py: Operations) -------------------------------------
+
+type ApiServiceType = RequestService
+
+interface ApiServiceRequest {
+  id: string
+  household_id: string
+  service_type: ApiServiceType
+  source: ServiceRequest['source']
+  reported_at: string
+  completion_event_id: string | null
+  completed_at: string | null
+  response_seconds: number | null
+}
+
+interface ApiServiceCoverage {
+  service: VisitService
+  drivers_available: number
+  drivers_standby: number
+  trucks_in_service: number
+  crews_available: number
+  crews_needed: number
+  shortfall: number
+  households_per_truck: number | null
+  household_coverage: number | null
+  uncovered_households: number | null
+}
+
+export interface ApiOperations {
+  storage: 'sample' | 'postgres'
+  open_requests: ApiServiceRequest[]
+  completed_requests: ApiServiceRequest[]
+  visits: { household_id: string; service_type: ApiServiceType; last_visit: string | null; visit_count: number }[]
+  completions: { event_id: string; household_id: string; zone: Zone; truck_id: string; service_type: ApiServiceType; completed_at: string }[]
+  drivers: { id: string; service: VisitService; status: 'available' | 'standby' | 'absent' }[]
+  trucks: { id: string }[]
+  coverage: {
+    drivers_available: number
+    drivers_standby: number
+    trucks_in_service: number
+    shortfall: boolean
+    water: ApiServiceCoverage
+    sanitation: ApiServiceCoverage
+    assumption: string
+  }
+}
+
+/** Adapt the #3 operations response to the shape these screens use. */
+export function fromApi(api: ApiOperations): OperationsResponse {
+  const byEvent = new Map(api.completed_requests.filter((r) => r.completion_event_id).map((r) => [r.completion_event_id as string, r]))
+  const water = api.coverage.water
+  const covered = water.household_coverage ?? undefined
+  return {
+    generated_at: new Date().toISOString(),
+    open_requests: api.open_requests.map((r) => ({
+      id: r.id,
+      household_id: r.household_id,
+      zone: r.household_id.charAt(0) as Zone,
+      service: r.service_type,
+      source: r.source,
+      reported_at: r.reported_at,
+      status: 'open',
+    })),
+    completed: [...api.completions]
+      .sort((a, b) => b.completed_at.localeCompare(a.completed_at))
+      .map((c) => {
+        const req = byEvent.get(c.event_id)
+        return {
+          id: c.event_id,
+          request_id: req?.id ?? null,
+          household_id: c.household_id,
+          service: visitServiceOf(c.service_type),
+          truck_id: c.truck_id,
+          reported_at: req?.reported_at ?? null,
+          completed_at: c.completed_at,
+          response_minutes: req?.response_seconds != null ? Math.round(req.response_seconds / 60) : null,
+        }
+      }),
+    history: api.visits
+      .filter((v) => v.visit_count > 0 && v.last_visit)
+      .map((v) => ({ household_id: v.household_id, service: visitServiceOf(v.service_type), last_visit: v.last_visit as string, visit_count: v.visit_count })),
+    coverage: {
+      drivers_available: api.coverage.drivers_available,
+      drivers_standby: api.coverage.drivers_standby,
+      drivers_absent: api.drivers.filter((d) => d.status === 'absent').length,
+      drivers_needed: water.crews_needed + api.coverage.sanitation.crews_needed,
+      trucks_in_service: api.coverage.trucks_in_service,
+      trucks_total: api.trucks.length,
+      households_per_truck: water.households_per_truck ?? 500,
+      water_households_total: (water.household_coverage ?? 0) + (water.uncovered_households ?? 0),
+      water_households_covered: covered,
+      shortfall: api.coverage.shortfall,
+      assumption: api.coverage.assumption,
+    },
+  }
+}
+
 export async function loadOperations(): Promise<OperationsView> {
   const pending = pendingCompletions()
-  // Prefer the real #3 endpoint when it exists.
+  // Prefer the real #3 endpoint.
   try {
     const res = await fetch('/api/operations', { headers: { Accept: 'application/json' } })
-    if (res.ok) return { ...((await res.json()) as OperationsResponse), source: 'api', pending }
+    if (res.ok) return { ...fromApi((await res.json()) as ApiOperations), source: 'api', pending }
   } catch {
     /* fall through to sample data */
   }

@@ -142,7 +142,7 @@ export function CoverageCard({ ops }: { ops: OperationsView }) {
   const fmt = useFormat()
   const navigate = useAppStore((s) => s.navigate)
   const c = ops.coverage
-  const covered = Math.min(c.trucks_in_service * c.households_per_truck, c.water_households_total)
+  const covered = c.water_households_covered ?? Math.min(c.trucks_in_service * c.households_per_truck, c.water_households_total)
 
   return (
     <section aria-labelledby="ops-coverage" className="card">
@@ -168,7 +168,7 @@ export function CoverageCard({ ops }: { ops: OperationsView }) {
         {c.shortfall ? <TriangleAlert aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0" /> : <CircleCheckBig aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0" />}
         {c.shortfall ? o.shortfall : o.noShortfall}
       </p>
-      <p className="mt-3 text-slate-600">{o.assumption(c.households_per_truck)}</p>
+      <p className="mt-3 text-slate-600">{c.assumption ?? o.assumption(c.households_per_truck)}</p>
       <a
         href="/jobs"
         onClick={(e: MouseEvent) => {
