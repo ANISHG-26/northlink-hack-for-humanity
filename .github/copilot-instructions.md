@@ -1,0 +1,1 @@
+Follow the repository's `AGENTS.md` and `CONTRIBUTING.md`. Keep changes small and PR-ready. Use the team's branch and PR naming conventions, explain validation honestly, and update setup documentation when it changes. The stack and product scope are still undecided; do not assume them.
