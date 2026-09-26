@@ -68,6 +68,11 @@ STAFF_DEMO_PIN = "1234"  # DEMO ONLY — real deployments need proper staff acco
 
 app = FastAPI(title="Northlink API", version="0.3.0")
 
+# Source and drop-point water quality checks (#8).
+from api.water_checks import router as water_checks_router  # noqa: E402
+
+app.include_router(water_checks_router)
+
 
 def get_household(household_id: str) -> Household:
     h = state.households.get(household_id.upper())

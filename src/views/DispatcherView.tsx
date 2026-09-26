@@ -12,6 +12,7 @@ import { StaffGate } from '../components/dispatcher/StaffGate'
 import { OutbreakPanel } from '../components/dispatcher/OutbreakPanel'
 import { SummaryCards } from '../components/dispatcher/SummaryCards'
 import { ZoneMap } from '../components/dispatcher/ZoneMap'
+import { WaterChecks } from '../components/dispatcher/WaterChecks'
 import { useT } from '../i18n'
 import { useAppStore } from '../store/useAppStore'
 
@@ -171,6 +172,9 @@ export function DispatcherView() {
           <SensorCoverage data={dash} />
         </div>
       </div>
+
+      {/* Source and drop-point water checks (#8) */}
+      <WaterChecks />
 
       {dialogZone && (
         <AdvisoryDialog
