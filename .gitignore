@@ -1,0 +1,20 @@
+# Dependencies and builds
+node_modules
+dist
+*.tsbuildinfo
+
+# Python
+.venv
+venv
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Secrets and local config
+.env*
+.vercel/
+.claude/
+
+# OS and logs
+.DS_Store
+*.log

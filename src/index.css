@@ -1,0 +1,69 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-size: 16px;
+  }
+  body {
+    @apply font-sans antialiased;
+  }
+}
+
+@layer components {
+  .tap {
+    @apply min-h-tap min-w-tap;
+  }
+  /* Reference card: white, 1px line border, 20px radius, 28px padding (22px on phones) */
+  .card {
+    background: #fff;
+    border: 1px solid #dce6ec;
+    border-radius: 20px;
+    padding: 28px;
+  }
+  @media (max-width: 560px) {
+    .card {
+      padding: 22px;
+    }
+  }
+}
+
+/* Gentle wave on the tank water surface */
+@keyframes tank-wave {
+  from { transform: translateX(0); }
+  to { transform: translateX(30px); }
+}
+.tank-wave {
+  animation: tank-wave 3s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .tank-wave { animation: none; }
+  * { transition-duration: 0ms !important; }
+}
+
+/* Zone labels on the dispatcher map: icon + zone letter + state text */
+.zone-label {
+  background: none;
+  border: none;
+}
+.zone-label > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+  background: #fff;
+  border: 2px solid;
+  border-radius: 999px;
+  padding: 2px 8px;
+  font: 600 14px/1.2 "Noto Sans", system-ui, sans-serif;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.2);
+}
+.zone-label b {
+  color: #0f2a44;
+  font-size: 16px;
+}
+.zone-label > span > span {
+  color: #1a202c;
+}
