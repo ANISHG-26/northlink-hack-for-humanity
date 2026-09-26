@@ -19,6 +19,7 @@ import { OfflineBanner } from '../components/OfflineBanner'
 import { QrScanner } from '../components/driver/QrScanner'
 import { RouteStopCard } from '../components/driver/RouteStopCard'
 import { useT } from '../i18n'
+import { useOpsT } from '../i18n/features/operations'
 import { useFormat } from '../i18n/format'
 import { useAppStore } from '../store/useAppStore'
 
@@ -40,6 +41,7 @@ type Message =
 export function DriverView() {
   const t = useT()
   const fmt = useFormat()
+  const o = useOpsT()
   const isOnline = useAppStore((s) => s.isOnline)
   const simulateOffline = useAppStore((s) => s.simulateOffline)
   const setSimulateOffline = useAppStore((s) => s.setSimulateOffline)
@@ -330,14 +332,13 @@ export function DriverView() {
         )}
       </section>
 
-      {/* Completed */}
-      <section aria-labelledby="completed-heading">
-        <h2 id="completed-heading" className="text-2xl font-bold text-navy mb-3">
-          {t.driver.completedTitle}
-        </h2>
-        {pending.length === 0 && completed.length === 0 ? (
-          <p className="card text-slate-600">{t.driver.noneCompleted}</p>
-        ) : (
+      {/* Pending: done offline on this device, not yet synced — never shown as completed */}
+      {pending.length > 0 && (
+        <section aria-labelledby="pending-heading">
+          <h2 id="pending-heading" className="text-2xl font-bold text-navy mb-1">
+            {o.pending}
+          </h2>
+          <p className="mb-3 text-slate-600">{o.pendingNote}</p>
           <ul className="card !p-0 divide-y divide-slate-100">
             {pending.map((p) => (
               <li key={`p-${p.household_id}-${p.service}`} className="flex flex-wrap items-center justify-between gap-2 px-4 py-3">
@@ -351,6 +352,19 @@ export function DriverView() {
                 </span>
               </li>
             ))}
+          </ul>
+        </section>
+      )}
+
+      {/* Completed (confirmed by the server) */}
+      <section aria-labelledby="completed-heading">
+        <h2 id="completed-heading" className="text-2xl font-bold text-navy mb-3">
+          {t.driver.completedTitle}
+        </h2>
+        {completed.length === 0 ? (
+          <p className="card text-slate-600">{t.driver.noneCompleted}</p>
+        ) : (
+          <ul className="card !p-0 divide-y divide-slate-100">
             {completed.map((c) => (
               <li key={`${c.household_id}-${c.service}`} className="flex flex-wrap items-center justify-between gap-2 px-4 py-3">
                 <span>
