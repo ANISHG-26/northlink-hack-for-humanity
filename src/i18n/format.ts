@@ -6,7 +6,8 @@ import { useT } from '.'
 export const COMMUNITY_TZ = 'America/Toronto'
 
 // Inuktitut UI text is English placeholders for now, so format like English.
-const LOCALES: Record<Lang, string> = { en: 'en-CA', fr: 'fr-CA', iu: 'en-CA' }
+// en-US gives "1:40 PM" as in the approved design (en-CA writes "p.m.").
+const LOCALES: Record<Lang, string> = { en: 'en-US', fr: 'fr-CA', iu: 'en-US' }
 
 function dayKey(d: Date): string {
   return d.toLocaleDateString('en-CA', { timeZone: COMMUNITY_TZ })

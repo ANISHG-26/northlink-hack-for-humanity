@@ -3,7 +3,7 @@ import type { OutbreakAlert, Zone } from '../../api/types'
 import { useT } from '../../i18n'
 import { useAppStore } from '../../store/useAppStore'
 
-const LOCALES = { en: 'en-CA', fr: 'fr-CA', iu: 'en-CA' } as const
+const LOCALES = { en: 'en-US', fr: 'fr-CA', iu: 'en-US' } as const
 
 export function OutbreakPanel({ alerts, onIssue }: { alerts: OutbreakAlert[]; onIssue: (zone: Zone) => void }) {
   const t = useT()
