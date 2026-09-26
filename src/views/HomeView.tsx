@@ -61,8 +61,7 @@ export function HomeView() {
   return (
     <>
       <header className="hero">
-        {/* Real photo when public/hero.jpg exists; otherwise the gradient sky shows through. */}
-        <div className="hero-photo" role="img" aria-label={r.heroPhoto} style={{ backgroundImage: "url('/hero.jpg')" }} />
+        <div className="hero-photo" role="img" aria-label={r.heroPhoto} style={{ backgroundImage: "url('/hero-background.png')" }} />
         <svg className="hero-waves" viewBox="0 0 1440 400" preserveAspectRatio="none" aria-hidden="true">
           <path d="M0 220 C 240 180 480 260 720 220 S 1200 180 1440 220" fill="none" stroke="#fff" strokeWidth="1.5" />
           <path d="M0 270 C 260 230 500 310 760 270 S 1220 230 1440 270" fill="none" stroke="#fff" strokeWidth="1" />
@@ -102,6 +101,9 @@ export function HomeView() {
       </header>
 
       <main id="main" tabIndex={-1} className="outline-none">
+        <div className="wrap service-art">
+          <img src="/water-sanitation.png" alt="" loading="lazy" />
+        </div>
         <section className="wrap why" aria-labelledby="why-title">
           <h2 id="why-title">{t.home.whyTitle}</h2>
           <ul>

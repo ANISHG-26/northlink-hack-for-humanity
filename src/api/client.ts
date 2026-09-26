@@ -26,10 +26,11 @@ import type {
   Classification,
   SensorReading,
   Service,
+  ServiceType, Operations, ReadinessIn, Breakdown, BreakdownIn, RepairIn, WaterCheck, WaterCheckIn, ReviewIn,
 } from './types'
 
 // Bump the version when API response shapes change so stale caches are ignored.
-const CACHE_PREFIX = 'northlink:cache:v3:'
+const CACHE_PREFIX = 'northlink:cache:v4:'
 const QUEUE_KEY = 'northlink:queue'
 
 interface CacheEntry<T> {
@@ -152,13 +153,26 @@ export async function flushQueue(): Promise<number> {
   try {
     let q = readQueue()
     while (q.length) {
+      // Upgrade legacy queued events before the first attempt; preserve the ID on errors.
+      if (q[0].path === '/reports' || /^\/deliveries\/[^/]+\/complete$/.test(q[0].path)) {
+        const body = q[0].body as Record<string, unknown>
+        if (!body.event_id) {
+          q[0].body = { ...body, event_id: crypto.randomUUID() }
+          writeQueue(q)
+        }
+      }
       try {
-        await rawPost(q[0].path, q[0].body)
+        const res = await rawPost(q[0].path, q[0].body)
+        if (!res.ok) return sent // validation/server errors must remain queued
       } catch {
         return sent // still offline
       }
       useAppStore.getState().setOnline(true)
-      q = q.slice(1)
+      // A new item may have been appended while fetch was in flight.
+      const delivered = JSON.stringify(q[0])
+      q = readQueue()
+      const index = q.findIndex(item => JSON.stringify(item) === delivered)
+      if (index >= 0) q.splice(index, 1)
       writeQueue(q)
       sent++
     }
@@ -183,16 +197,28 @@ export const api = {
   updateLevel: (id: string, level: LevelChoice) =>
     post<HouseholdStatus>(`/households/${encodeURIComponent(id)}/level`, { level }),
   // Timestamp is set here so a report queued offline keeps its real time.
-  report: (r: ReportIn) => post<Report>('/reports', { timestamp: new Date().toISOString(), ...r }),
+  report: (r: ReportIn) => post<Report>('/reports', { timestamp: new Date().toISOString(), ...r, event_id: r.event_id ?? crypto.randomUUID() }),
   routeToday: (truck: string) => get<RouteToday>(`/route/today?truck=${encodeURIComponent(truck)}`),
   // Timestamp is when the driver filled the tank, even if it syncs later.
-  completeDelivery: (id: string, truckId: string, service: Service = 'water') =>
+  completeDelivery: (id: string, truckId: string, service: Service = 'water', serviceType?: ServiceType, runId?: string) =>
     post<Completion>(`/deliveries/${encodeURIComponent(id)}/complete`, {
+      event_id: crypto.randomUUID(),
       truck_id: truckId,
       service,
+      service_type: serviceType,
+      run_id: runId,
       timestamp: new Date().toISOString(),
     }),
   dashboard: () => get<Dashboard>('/dashboard'),
+  operations: () => get<Operations>('/operations'),
+  readiness: (body: ReadinessIn) => postNow<Operations>('/operations/readiness', body, staffHeaders()),
+  breakdowns: () => get<Breakdown[]>('/breakdowns'),
+  createBreakdown: (body: BreakdownIn) => postNow<Breakdown>('/breakdowns', body, staffHeaders()),
+  repair: (id: string, body: RepairIn) => postNow<Breakdown>(`/breakdowns/${encodeURIComponent(id)}/repair`, body, staffHeaders()),
+  updateStock: (id: string, on_hand: number) => postNow<Part>(`/parts/${encodeURIComponent(id)}/stock`, { on_hand }, staffHeaders()),
+  waterChecks: () => get<WaterCheck[]>('/water-checks'),
+  createWaterCheck: (body: WaterCheckIn) => postNow<WaterCheck>('/water-checks', body, staffHeaders()),
+  reviewWaterCheck: (id: string, body: ReviewIn) => postNow<WaterCheck>(`/water-checks/${encodeURIComponent(id)}/review`, body, staffHeaders()),
   outbreaks: () => get<OutbreakAlert[]>('/outbreaks'),
   advisories: () => get<Advisory[]>('/advisories'),
   issueAdvisory: (a: AdvisoryIn) => postNow<Advisory>('/advisories', a, staffHeaders()),

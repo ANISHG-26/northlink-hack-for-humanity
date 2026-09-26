@@ -226,6 +226,15 @@ body {
 .appbar :focus-visible {
   outline-color: #fff;
 }
+.service-art {
+  padding-top: 32px;
+}
+.service-art img {
+  display: block;
+  width: min(100%, 760px);
+  height: auto;
+  margin: 0 auto;
+}
 
 /* ---------- APP ---------- */
 .appbar {

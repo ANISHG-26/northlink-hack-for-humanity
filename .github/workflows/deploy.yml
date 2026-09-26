@@ -1,0 +1,28 @@
+name: Deploy to Vercel
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_ORG_ID: team_xCssNjMBL7VQToA81vwqEBL5
+      VERCEL_PROJECT_ID: prj_aPylygBmS20SdWBUv4JC2ivER9gm
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Deploy production
+        run: npx --yes vercel@60.1.3 deploy --prod --yes --token "$VERCEL_TOKEN"
