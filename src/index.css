@@ -25,3 +25,16 @@
     @apply bg-card rounded-xl shadow-sm border border-slate-200 p-5;
   }
 }
+
+/* Gentle wave on the tank water surface */
+@keyframes tank-wave {
+  from { transform: translateX(0); }
+  to { transform: translateX(30px); }
+}
+.tank-wave {
+  animation: tank-wave 3s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .tank-wave { animation: none; }
+  * { transition-duration: 0ms !important; }
+}

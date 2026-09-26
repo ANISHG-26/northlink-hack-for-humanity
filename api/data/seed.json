@@ -153,6 +153,16 @@
       "last_truck_id": "T2"
     },
     {
+      "id": "C-12",
+      "zone": "C",
+      "household_size": 4,
+      "tank_capacity_l": 1000,
+      "current_level_l": 520,
+      "last_delivery": "2026-09-24",
+      "vulnerable": true,
+      "last_truck_id": "T2"
+    },
+    {
       "id": "C-14",
       "zone": "C",
       "household_size": 7,
@@ -199,16 +209,6 @@
       "tank_capacity_l": 1000,
       "current_level_l": 274,
       "last_delivery": "2026-09-23",
-      "vulnerable": false,
-      "last_truck_id": "T2"
-    },
-    {
-      "id": "C-38",
-      "zone": "C",
-      "household_size": 1,
-      "tank_capacity_l": 1000,
-      "current_level_l": 729,
-      "last_delivery": "2026-09-21",
       "vulnerable": false,
       "last_truck_id": "T2"
     },
@@ -592,6 +592,14 @@
       "monthly_use": 1.2,
       "lead_time_days": 45,
       "next_sealift": "2027-07-15"
+    }
+  ],
+  "advisories": [
+    {
+      "zone": "C",
+      "status": "boil",
+      "since": "2026-09-25",
+      "reason": "Illness reports in Zone C under investigation"
     }
   ]
 }

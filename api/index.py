@@ -1,7 +1,5 @@
 """Northlink API — FastAPI app, served by Vercel as a Python serverless function."""
-import json
 import sys
-from functools import lru_cache
 from pathlib import Path
 
 # Make `api.*` importable both under uvicorn (run from repo root) and on Vercel.
@@ -9,18 +7,68 @@ ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from fastapi import FastAPI  # noqa: E402
+from fastapi import FastAPI, HTTPException  # noqa: E402
 
-from api.models import Health, Household, SeedData  # noqa: E402
+from api.ai.forecast import Reading, forecast  # noqa: E402
+from api.models import (  # noqa: E402
+    DELIVERY_STAGES,
+    Delivery,
+    Forecast,
+    Health,
+    Household,
+    HouseholdStatus,
+    LevelUpdate,
+    Report,
+    ReportIn,
+    Safety,
+)
+from api.state import now, state  # noqa: E402
 
-SEED_PATH = Path(__file__).resolve().parent / "data" / "seed.json"
+LEVEL_FRACTIONS = {"full": 1.0, "three_quarters": 0.75, "half": 0.5, "quarter": 0.25, "empty": 0.0}
 
-app = FastAPI(title="Northlink API", version="0.1.0")
+app = FastAPI(title="Northlink API", version="0.2.0")
 
 
-@lru_cache
-def load_seed() -> SeedData:
-    return SeedData.model_validate(json.loads(SEED_PATH.read_text(encoding="utf-8")))
+def get_household(household_id: str) -> Household:
+    h = state.households.get(household_id.upper())
+    if not h:
+        raise HTTPException(404, f"Household {household_id} not found")
+    return h
+
+
+def build_status(h: Household) -> HouseholdStatus:
+    f = forecast(h.household_size, h.tank_capacity_l, state.readings[h.id], now())
+    advisory = next((a for a in state.seed.advisories if a.zone == h.zone), None)
+    d = state.delivery(h.id)
+    truck = state.trucks[h.last_truck_id]
+    return HouseholdStatus(
+        household=h,
+        forecast=Forecast(
+            litres_left=int(f.litres_left),
+            capacity_l=h.tank_capacity_l,
+            percent=round(100 * f.litres_left / h.tank_capacity_l),
+            daily_use_l=int(f.daily_use_l),
+            days_left=f.days_left,
+            predicted_empty=f.predicted_empty,
+            confidence=f.confidence,
+            confidence_note=f.confidence_note,
+            method=f.method,
+        ),
+        safety=Safety(
+            status=advisory.status if advisory else "safe",
+            zone=h.zone,
+            since=advisory.since if advisory else None,
+            reason=advisory.reason if advisory else None,
+        ),
+        delivery=Delivery(
+            stage=DELIVERY_STAGES[d["stage_index"]],
+            stage_index=d["stage_index"],
+            truck_id=truck.id,
+            truck_name=truck.name,
+            eta=d["eta"],
+            updated_at=d["updated_at"],
+        ),
+    )
 
 
 @app.get("/api/health", response_model=Health)
@@ -30,4 +78,38 @@ def health() -> Health:
 
 @app.get("/api/households", response_model=list[Household])
 def households() -> list[Household]:
-    return load_seed().households
+    return list(state.households.values())
+
+
+@app.get("/api/households/{household_id}/status", response_model=HouseholdStatus)
+def household_status(household_id: str) -> HouseholdStatus:
+    return build_status(get_household(household_id))
+
+
+@app.post("/api/households/{household_id}/level", response_model=HouseholdStatus)
+def update_level(household_id: str, body: LevelUpdate) -> HouseholdStatus:
+    h = get_household(household_id)
+    litres = round(h.tank_capacity_l * LEVEL_FRACTIONS[body.level])
+    state.readings[h.id].append(Reading(now(), litres))
+    return build_status(h)
+
+
+@app.post("/api/reports", response_model=Report, status_code=201)
+def create_report(body: ReportIn) -> Report:
+    h = get_household(body.household_id)
+    report = Report(
+        **body.model_dump(exclude={"timestamp", "household_id"}),
+        household_id=h.id,
+        id=f"U{len(state.reports) + 1}",
+        timestamp=body.timestamp or now(),
+        zone=h.zone,
+    )
+    state.reports.append(report)
+    return report
+
+
+@app.post("/api/deliveries/{household_id}/advance", response_model=HouseholdStatus)
+def advance_delivery(household_id: str) -> HouseholdStatus:
+    h = get_household(household_id)
+    state.advance_delivery(h.id)
+    return build_status(h)

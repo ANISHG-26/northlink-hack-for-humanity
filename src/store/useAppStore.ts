@@ -3,13 +3,19 @@ import { create } from 'zustand'
 export type Lang = 'en' | 'fr' | 'iu'
 export type View = 'resident' | 'driver' | 'dispatcher' | 'parts'
 
+/** The demo resident's house (Zone C). */
+export const RESIDENT_HOUSEHOLD = 'C-12'
+
 interface AppState {
   isOnline: boolean
   lang: Lang
   view: View
+  /** Demo switch: make every API call behave as if the network is down. */
+  simulateOffline: boolean
   setOnline: (v: boolean) => void
   setLang: (l: Lang) => void
   setView: (v: View) => void
+  setSimulateOffline: (v: boolean) => void
 }
 
 function loadLang(): Lang {
@@ -35,6 +41,9 @@ export const useAppStore = create<AppState>((set) => ({
     set({ lang })
   },
   setView: (view) => set({ view }),
+  simulateOffline: false,
+  setSimulateOffline: (simulateOffline) =>
+    set({ simulateOffline, isOnline: simulateOffline ? false : typeof navigator === 'undefined' || navigator.onLine }),
 }))
 
 if (typeof window !== 'undefined') {

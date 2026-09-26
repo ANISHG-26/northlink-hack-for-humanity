@@ -55,3 +55,68 @@ export interface ApiResult<T> {
   fromCache: boolean
   cachedAt?: string
 }
+
+export type WaterStatus = 'safe' | 'boil' | 'nodrink'
+
+export interface Advisory {
+  zone: Zone
+  status: WaterStatus
+  since: string
+  reason: string
+}
+
+// --- Resident status ---------------------------------------------------------
+
+export type LevelChoice = 'full' | 'three_quarters' | 'half' | 'quarter' | 'empty'
+export const DELIVERY_STAGES = ['scheduled', 'truck_loaded', 'en_route', 'nearby', 'delivered'] as const
+export type DeliveryStage = (typeof DELIVERY_STAGES)[number]
+
+export interface Forecast {
+  litres_left: number
+  capacity_l: number
+  percent: number
+  daily_use_l: number
+  days_left: number
+  predicted_empty: string // ISO datetime
+  confidence: 'low' | 'medium' | 'high'
+  confidence_note: string
+  method: 'household_size' | 'blended'
+}
+
+export interface Safety {
+  status: WaterStatus
+  zone: Zone
+  since: string | null
+  reason: string | null
+}
+
+export interface Delivery {
+  stage: DeliveryStage
+  stage_index: number
+  truck_id: string
+  truck_name: string
+  eta: string // ISO datetime
+  updated_at: string // ISO datetime
+}
+
+export interface HouseholdStatus {
+  household: Household
+  forecast: Forecast
+  safety: Safety
+  delivery: Delivery
+}
+
+export type ReportType = 'water_quality' | 'tank_damage' | 'illness'
+
+export interface ReportIn {
+  type: ReportType
+  household_id: string
+  timestamp?: string
+  note?: string
+}
+
+export interface Report extends ReportIn {
+  id: string
+  timestamp: string
+  zone: Zone
+}

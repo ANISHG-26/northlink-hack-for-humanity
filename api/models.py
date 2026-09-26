@@ -1,5 +1,5 @@
 """Pydantic models. Keep in sync with src/api/types.ts."""
-from datetime import date
+from datetime import date, datetime
 from typing import Literal
 
 from pydantic import BaseModel
@@ -48,6 +48,16 @@ class Part(BaseModel):
     next_sealift: date
 
 
+WaterStatus = Literal["safe", "boil", "nodrink"]
+
+
+class Advisory(BaseModel):
+    zone: Zone
+    status: WaterStatus
+    since: date
+    reason: str
+
+
 class SeedData(BaseModel):
     generated_for: date
     note: str
@@ -55,6 +65,69 @@ class SeedData(BaseModel):
     trucks: list[Truck]
     illness_reports: list[IllnessReport]
     parts: list[Part]
+    advisories: list[Advisory] = []
+
+
+# --- Resident status ---------------------------------------------------------
+
+LevelChoice = Literal["full", "three_quarters", "half", "quarter", "empty"]
+DeliveryStage = Literal["scheduled", "truck_loaded", "en_route", "nearby", "delivered"]
+DELIVERY_STAGES: list[DeliveryStage] = ["scheduled", "truck_loaded", "en_route", "nearby", "delivered"]
+
+
+class Forecast(BaseModel):
+    litres_left: int
+    capacity_l: int
+    percent: int
+    daily_use_l: int
+    days_left: float
+    predicted_empty: datetime
+    confidence: Literal["low", "medium", "high"]
+    confidence_note: str
+    method: Literal["household_size", "blended"]
+
+
+class Safety(BaseModel):
+    status: WaterStatus
+    zone: Zone
+    since: date | None
+    reason: str | None
+
+
+class Delivery(BaseModel):
+    stage: DeliveryStage
+    stage_index: int
+    truck_id: str
+    truck_name: str
+    eta: datetime
+    updated_at: datetime
+
+
+class HouseholdStatus(BaseModel):
+    household: Household
+    forecast: Forecast
+    safety: Safety
+    delivery: Delivery
+
+
+class LevelUpdate(BaseModel):
+    level: LevelChoice
+
+
+ReportType = Literal["water_quality", "tank_damage", "illness"]
+
+
+class ReportIn(BaseModel):
+    type: ReportType
+    household_id: str
+    timestamp: datetime | None = None
+    note: str | None = None
+
+
+class Report(ReportIn):
+    id: str
+    timestamp: datetime
+    zone: Zone
 
 
 class Health(BaseModel):

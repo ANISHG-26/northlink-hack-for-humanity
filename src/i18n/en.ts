@@ -9,7 +9,9 @@ export const en = {
     parts: 'Parts',
   },
   online: 'Online',
-  offline: 'Offline — showing saved data',
+  offline: 'Offline',
+  offlineBanner: 'Offline, showing last saved info',
+  savedAt: (time: string) => `Saved ${time}`,
   comingSoon: 'Coming soon',
   placeholder: {
     resident: 'Your tank level, next delivery, and water safety status.',
@@ -19,7 +21,99 @@ export const en = {
   },
   householdsLoaded: 'households loaded',
   loadError: 'Could not load data.',
+  retry: 'Try again',
+  loading: 'Loading…',
   footer: 'Sample data for demonstration',
+
+  today: 'today',
+  tomorrow: 'tomorrow',
+
+  safety: {
+    safe: 'Safe to drink',
+    boil: 'Boil before drinking',
+    nodrink: 'Do not drink',
+    safeDetail: 'Tap water in your zone is safe to drink.',
+    boilDetail: 'Bring water to a rolling boil for 1 minute before drinking, cooking, making formula, or brushing teeth.',
+    nodrinkDetail: 'Do not drink this water, even if boiled. Use bottled water until further notice.',
+    since: (date: string) => `Since ${date}`,
+    zone: (z: string) => `Zone ${z}`,
+  },
+
+  water: {
+    title: 'Your water',
+    daysLeft: (n: number) =>
+      n < 1 ? 'Less than 1 day of water left' : n < 1.5 ? 'About 1 day of water left' : `About ${Math.round(n)} days of water left`,
+    tank: (litres: string) => `Tank: ${litres} L`,
+    litresLeft: (litres: string) => `About ${litres} L left`,
+    tankLabel: (pct: number, litres: string) => `Tank about ${pct}% full, ${litres} litres`,
+    runningLow: 'Running low',
+    emptyBy: (when: string) => `Could run out ${when}`,
+    confidence: {
+      low: 'Estimate based on household size.',
+      medium: 'Estimate uses your recent water use.',
+      high: 'Estimate based on your recent tank updates.',
+    },
+  },
+
+  delivery: {
+    title: 'Next delivery',
+    stages: {
+      scheduled: 'Scheduled',
+      truck_loaded: 'Truck loaded',
+      en_route: 'En route',
+      nearby: 'Nearby',
+      delivered: 'Delivered',
+    },
+    arriving: (day: string, time: string) => `Arriving ${day}, about ${time}`,
+    arrivingSoon: (mins: number) => `Arriving in about ${mins} minutes`,
+    delivered: (time: string) => `Delivered at ${time}`,
+    truck: (name: string) => name,
+    lastUpdated: (time: string) => `Last updated ${time}`,
+    step: (n: number, total: number) => `Step ${n} of ${total}`,
+    current: 'current step',
+    done: 'done',
+    nextStage: 'Next stage (demo)',
+  },
+
+  level: {
+    title: 'Update my tank level',
+    help: 'Look at your tank and tap the closest level.',
+    full: 'Full',
+    three_quarters: '3/4',
+    half: '1/2',
+    quarter: '1/4',
+    empty: 'Empty',
+    saved: 'Thank you. Your forecast is updated.',
+    queued: 'Saved. It will send when you are back online.',
+    error: 'Could not save. Please try again.',
+  },
+
+  report: {
+    title: 'Report a problem',
+    help: 'Your report goes to the water office.',
+    water_quality: 'Water looks, smells, or tastes wrong',
+    tank_damage: 'Tank damaged or leaking',
+    illness: 'Someone in my home has stomach illness',
+    confirmTitle: 'Send this report?',
+    confirmFor: (house: string) => `For household ${house}`,
+    send: 'Send report',
+    cancel: 'Cancel',
+    sentTitle: 'Report sent. Thank you.',
+    sentAt: (time: string) => `Sent at ${time}. The water office will follow up.`,
+    queuedTitle: 'Report saved',
+    queuedAt: 'You are offline. It will send automatically when you are back online.',
+    adviceWater: 'Until you hear back, boil water before drinking.',
+    adviceIllness: 'If someone is very sick, has a high fever, or cannot keep fluids down, go to the health centre.',
+    adviceTank: 'If water is leaking, turn off the tank valve if you can.',
+    done: 'Done',
+    error: 'Could not send. Please try again.',
+  },
+
+  qr: {
+    title: 'My household QR code',
+    help: 'Show this to your driver',
+    alt: (house: string) => `QR code for household ${house}`,
+  },
 }
 
 export type Strings = typeof en
