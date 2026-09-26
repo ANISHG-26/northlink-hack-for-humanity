@@ -35,15 +35,23 @@ export interface IllnessReport {
   truck_id: string
 }
 
+export type PartCategory = 'treatment' | 'truck' | 'household'
+
 export interface Part {
   id: string
   name: string
-  category: 'treatment' | 'truck' | 'household'
+  category: PartCategory
+  unit: string
   on_hand: number
-  min_stock: number
   monthly_use: number
-  lead_time_days: number
-  next_sealift: string
+}
+
+export interface Partner {
+  id: string
+  type: 'health' | 'provincial' | 'federal' | 'supplier'
+  name: string
+  helps_with: string[]
+  request_template: 'water_testing' | 'general' | 'parts'
 }
 
 export interface Health {
@@ -212,4 +220,37 @@ export interface OutbreakAlert {
   summary: string // English; UI builds a localized version from the fields
   recommended_action: string
   how_detected: string[]
+}
+
+// --- Parts / sealift -------------------------------------------------------------
+
+export type PartStatus = 'ok' | 'order' | 'critical'
+
+export interface PartPlan extends Part {
+  months_left: number | null
+  runs_out_on: string | null
+  status: PartStatus
+  sealift_qty: number
+  air_freight_qty: number
+  reason: string
+}
+
+export interface OrderLine {
+  part_id: string
+  name: string
+  unit: string
+  quantity: number
+  shipping: 'air_freight' | 'sealift'
+}
+
+export interface SealiftPlan {
+  today: string
+  next_sealift: string
+  following_sealift: string
+  days_until_deadline: number
+  cover_months: number
+  safety_buffer_pct: number
+  parts: PartPlan[]
+  at_risk: PartPlan[]
+  order: OrderLine[]
 }

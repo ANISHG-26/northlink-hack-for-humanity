@@ -14,8 +14,14 @@ from fastapi import FastAPI, HTTPException  # noqa: E402
 from api.ai.forecast import Reading, forecast  # noqa: E402
 from api.ai.outbreak import IllnessCase, QualityComplaint, detect_outbreaks  # noqa: E402
 from api.ai.routing import StopInput, rank_stops  # noqa: E402
+from api.ai.supply import COVER_MONTHS, SAFETY_BUFFER, PartStock, plan_supply  # noqa: E402
 from api.models import (  # noqa: E402
     DELIVERY_STAGES,
+    OrderLine,
+    Part,
+    PartPlanOut,
+    Partner,
+    SealiftPlan,
     Advisory,
     AdvisoryIn,
     Dashboard,
@@ -297,3 +303,52 @@ def lift_advisory(zone: str) -> None:
 def demo_reset() -> None:
     """Reset all in-memory demo state back to the seed data."""
     state.__init__()
+
+
+# --- Parts / sealift -------------------------------------------------------------
+
+SEALIFT_DAYS_AWAY = 42  # demo: next sealift order deadline is 42 days out
+SEALIFT_INTERVAL_DAYS = 365
+
+
+@app.get("/api/parts", response_model=list[Part])
+def parts() -> list[Part]:
+    return state.seed.parts
+
+
+@app.get("/api/parts/sealift-plan", response_model=SealiftPlan)
+def sealift_plan() -> SealiftPlan:
+    today = now().date()
+    next_sealift = today + timedelta(days=SEALIFT_DAYS_AWAY)
+    following = next_sealift + timedelta(days=SEALIFT_INTERVAL_DAYS)
+    by_id = {p.id: p for p in state.seed.parts}
+    plans = plan_supply(
+        [PartStock(p.id, p.name, p.unit, p.on_hand, p.monthly_use) for p in state.seed.parts],
+        today,
+        next_sealift,
+        following,
+    )
+    out = [PartPlanOut(**vars(pl), category=by_id[pl.id].category) for pl in plans]
+    order: list[OrderLine] = []
+    for pl in out:
+        if pl.air_freight_qty:
+            order.append(OrderLine(part_id=pl.id, name=pl.name, unit=pl.unit, quantity=pl.air_freight_qty, shipping="air_freight"))
+    for pl in out:
+        if pl.sealift_qty:
+            order.append(OrderLine(part_id=pl.id, name=pl.name, unit=pl.unit, quantity=pl.sealift_qty, shipping="sealift"))
+    return SealiftPlan(
+        today=today,
+        next_sealift=next_sealift,
+        following_sealift=following,
+        days_until_deadline=SEALIFT_DAYS_AWAY,
+        cover_months=COVER_MONTHS,
+        safety_buffer_pct=round(SAFETY_BUFFER * 100),
+        parts=out,
+        at_risk=[pl for pl in out if pl.status != "ok"],
+        order=order,
+    )
+
+
+@app.get("/api/partners", response_model=list[Partner])
+def partners() -> list[Partner]:
+    return state.seed.partners

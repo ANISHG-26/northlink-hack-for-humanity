@@ -42,11 +42,17 @@ class Part(BaseModel):
     id: str
     name: str
     category: Literal["treatment", "truck", "household"]
+    unit: str
     on_hand: int
-    min_stock: int
     monthly_use: float
-    lead_time_days: int
-    next_sealift: date
+
+
+class Partner(BaseModel):
+    id: str
+    type: Literal["health", "provincial", "federal", "supplier"]
+    name: str
+    helps_with: list[str]
+    request_template: Literal["water_testing", "general", "parts"]
 
 
 WaterStatus = Literal["safe", "boil", "nodrink"]
@@ -76,6 +82,7 @@ class SeedData(BaseModel):
     parts: list[Part]
     advisories: list[Advisory] = []
     baseline_weekly_illness: dict[str, float] = {}
+    partners: list[Partner] = []
     resident_reports: list["Report"] = []
 
 
@@ -229,6 +236,46 @@ class OutbreakAlertOut(BaseModel):
     summary: str
     recommended_action: str
     how_detected: list[str]
+
+
+# --- Parts / sealift -----------------------------------------------------------
+
+PartStatus = Literal["ok", "order", "critical"]
+
+
+class PartPlanOut(BaseModel):
+    id: str
+    name: str
+    category: Literal["treatment", "truck", "household"]
+    unit: str
+    on_hand: int
+    monthly_use: float
+    months_left: float | None
+    runs_out_on: date | None
+    status: PartStatus
+    sealift_qty: int
+    air_freight_qty: int
+    reason: str
+
+
+class OrderLine(BaseModel):
+    part_id: str
+    name: str
+    unit: str
+    quantity: int
+    shipping: Literal["air_freight", "sealift"]
+
+
+class SealiftPlan(BaseModel):
+    today: date
+    next_sealift: date
+    following_sealift: date
+    days_until_deadline: int
+    cover_months: int
+    safety_buffer_pct: int
+    parts: list[PartPlanOut]
+    at_risk: list[PartPlanOut]
+    order: list[OrderLine]
 
 
 class Health(BaseModel):

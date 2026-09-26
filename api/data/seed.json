@@ -575,63 +575,51 @@
   "parts": [
     {
       "id": "P1",
-      "name": "Chlorine dosing pump",
-      "category": "treatment",
+      "name": "Truck water pump",
+      "category": "truck",
+      "unit": "pump",
       "on_hand": 1,
-      "min_stock": 2,
-      "monthly_use": 0.2,
-      "lead_time_days": 300,
-      "next_sealift": "2027-07-15"
+      "monthly_use": 0.25
     },
     {
       "id": "P2",
-      "name": "Truck water pump seal kit",
-      "category": "truck",
-      "on_hand": 3,
-      "min_stock": 4,
-      "monthly_use": 0.6,
-      "lead_time_days": 300,
-      "next_sealift": "2027-07-15"
+      "name": "Tank heater element",
+      "category": "household",
+      "unit": "element",
+      "on_hand": 2,
+      "monthly_use": 1.8
     },
     {
       "id": "P3",
-      "name": "Delivery hose, 2 in (15 m)",
+      "name": "Hose couplings (2 in)",
       "category": "truck",
-      "on_hand": 2,
-      "min_stock": 3,
-      "monthly_use": 0.4,
-      "lead_time_days": 300,
-      "next_sealift": "2027-07-15"
+      "unit": "coupling",
+      "on_hand": 6,
+      "monthly_use": 1.0
     },
     {
       "id": "P4",
-      "name": "Household tank float valve",
-      "category": "household",
-      "on_hand": 12,
-      "min_stock": 8,
-      "monthly_use": 1.5,
-      "lead_time_days": 300,
-      "next_sealift": "2027-07-15"
+      "name": "Chlorine test kits (100 tests)",
+      "category": "treatment",
+      "unit": "kit",
+      "on_hand": 1,
+      "monthly_use": 1.2
     },
     {
       "id": "P5",
-      "name": "Heat trace cable (30 m)",
-      "category": "household",
-      "on_hand": 4,
-      "min_stock": 6,
-      "monthly_use": 0.8,
-      "lead_time_days": 300,
-      "next_sealift": "2027-07-15"
+      "name": "Cartridge filters (5 micron)",
+      "category": "treatment",
+      "unit": "filter",
+      "on_hand": 30,
+      "monthly_use": 2.0
     },
     {
       "id": "P6",
-      "name": "Free chlorine test reagent (100 tests)",
-      "category": "treatment",
-      "on_hand": 5,
-      "min_stock": 6,
-      "monthly_use": 1.2,
-      "lead_time_days": 45,
-      "next_sealift": "2027-07-15"
+      "name": "Valve seal kits",
+      "category": "household",
+      "unit": "kit",
+      "on_hand": 20,
+      "monthly_use": 1.2
     }
   ],
   "advisories": [],
@@ -652,6 +640,52 @@
       "zone": "C",
       "timestamp": "2026-09-24T18:20:00-04:00",
       "note": "Water looks cloudy and smells different"
+    }
+  ],
+  "partners": [
+    {
+      "id": "health",
+      "type": "health",
+      "name": "Regional health board: water testing",
+      "helps_with": [
+        "Lab testing of water samples",
+        "Advice on boil water and do-not-drink advisories",
+        "Following up on illness clusters"
+      ],
+      "request_template": "water_testing"
+    },
+    {
+      "id": "provincial",
+      "type": "provincial",
+      "name": "Provincial support",
+      "helps_with": [
+        "Drinking water regulations and compliance",
+        "Operator training and certification",
+        "Emergency support for water systems"
+      ],
+      "request_template": "general"
+    },
+    {
+      "id": "federal",
+      "type": "federal",
+      "name": "Federal support",
+      "helps_with": [
+        "Funding for water infrastructure",
+        "Emergency response coordination",
+        "Environmental health officers"
+      ],
+      "request_template": "general"
+    },
+    {
+      "id": "suppliers",
+      "type": "supplier",
+      "name": "Nearest suppliers",
+      "helps_with": [
+        "Truck and pump parts",
+        "Air freight for urgent parts",
+        "Adding items to the sealift order"
+      ],
+      "request_template": "parts"
     }
   ]
 }

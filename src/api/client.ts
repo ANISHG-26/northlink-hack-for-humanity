@@ -19,6 +19,9 @@ import type {
   AdvisoryIn,
   Dashboard,
   OutbreakAlert,
+  Part,
+  Partner,
+  SealiftPlan,
 } from './types'
 
 const CACHE_PREFIX = 'northlink:cache:'
@@ -177,5 +180,8 @@ export const api = {
     const res = await fetch(`/api/advisories/${encodeURIComponent(zone)}`, { method: 'DELETE' })
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
   },
+  parts: () => get<Part[]>('/parts'),
+  sealiftPlan: () => get<SealiftPlan>('/parts/sealift-plan'),
+  partners: () => get<Partner[]>('/partners'),
   advanceDelivery: (id: string) => post<HouseholdStatus>(`/deliveries/${encodeURIComponent(id)}/advance`, {}),
 }
