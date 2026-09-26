@@ -143,6 +143,10 @@ Import the repo in Vercel and deploy. `vercel.json` builds the Vite app from `di
 for process-local sample mode. Shared tracking requires server-only `DATABASE_URL`,
 the migration, and the seed command. See [operations setup and API handoff](docs/operations.md).
 
+The production site is `https://northlink-hack-for-humanity.vercel.app`. A GitHub Actions workflow
+deploys every push to `main` to the existing Vercel project. It needs the repository Actions secret
+`VERCEL_TOKEN`; the project and team IDs are in the workflow.
+
 ## Service operations backend (API only)
 
 This adds the server-side data model and API for service operations tracking
@@ -158,10 +162,6 @@ frontend work required.
 See [the workflow guide, API contract, and database setup](docs/operations.md).
 The demo PIN is not production authentication. `APP_ENV=production` blocks writes
 until proper staff authentication is implemented.
-
-The production site is `https://northlink-hack-for-humanity.vercel.app`. A GitHub Actions workflow
-deploys every push to `main` to the existing Vercel project. It needs the repository Actions secret
-`VERCEL_TOKEN`; the project and team IDs are in the workflow.
 
 ## Important notes
 
