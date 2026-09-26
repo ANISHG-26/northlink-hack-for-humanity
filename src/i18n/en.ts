@@ -244,7 +244,7 @@ export const en = {
       boil: 'Boil water',
       nodrink: 'Do not drink',
       message: 'Message to residents',
-      defaultBoil: 'Boil all drinking water for 1 minute until further notice. We are testing the water supply and will update you.',
+      defaultBoil: 'Boil all drinking water for 1 minute until further notice. Health authorities are reviewing the water supply. We will share updates here.',
       defaultNodrink: 'Do not drink tap water, even if boiled. Use bottled water for drinking, cooking, and formula until further notice.',
       preview: 'Preview: what residents will see',
       source: 'Decided by',

@@ -155,7 +155,7 @@ export function DriverView() {
       {/* Demo controls + truck */}
       <section className="card flex flex-col gap-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div role="group" aria-label={t.driver.truckPicker} className="flex gap-2">
+          <div role="group" aria-label={t.driver.truckPicker} className="flex flex-wrap gap-2">
             {TRUCKS.map((id) => (
               <button
                 key={id}

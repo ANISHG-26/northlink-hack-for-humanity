@@ -15,6 +15,13 @@
     outline-offset: 2px;
     border-radius: 6px;
   }
+  /* White ring on dark surfaces (navy bars, hero, glass cards) so it stays visible */
+  .bg-navy :focus-visible,
+  .hero :focus-visible,
+  #site-menu :focus-visible,
+  header :focus-visible {
+    outline-color: #ffffff;
+  }
 }
 
 @layer components {
@@ -87,8 +94,8 @@
 /* Navy overlay: darker at top (nav) and bottom (text/cards) so white text passes AA. */
 .hero-overlay {
   background:
-    linear-gradient(to bottom, rgba(15, 42, 68, 0.7) 0%, rgba(15, 42, 68, 0.25) 22%, rgba(15, 42, 68, 0.3) 45%, rgba(15, 42, 68, 0.72) 70%, rgba(15, 42, 68, 0.9) 100%),
-    linear-gradient(to right, rgba(15, 42, 68, 0.45) 0%, rgba(15, 42, 68, 0) 60%);
+    linear-gradient(to bottom, rgba(15, 42, 68, 0.72) 0%, rgba(15, 42, 68, 0.35) 22%, rgba(15, 42, 68, 0.42) 45%, rgba(15, 42, 68, 0.75) 70%, rgba(15, 42, 68, 0.9) 100%),
+    linear-gradient(to right, rgba(15, 42, 68, 0.55) 0%, rgba(15, 42, 68, 0) 65%);
 }
 .glass-card {
   background: rgba(255, 255, 255, 0.15);

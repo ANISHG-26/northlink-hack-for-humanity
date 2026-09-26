@@ -246,7 +246,7 @@ export const fr: Strings = {
       boil: 'Faire bouillir',
       nodrink: 'Ne pas boire',
       message: 'Message aux résidents',
-      defaultBoil: 'Faites bouillir toute l’eau potable pendant 1 minute jusqu’à nouvel ordre. Nous analysons l’eau et vous tiendrons informés.',
+      defaultBoil: 'Faites bouillir toute l’eau potable pendant 1 minute jusqu’à nouvel ordre. Les autorités de santé examinent l’approvisionnement en eau. Les mises à jour seront publiées ici.',
       defaultNodrink: 'Ne buvez pas l’eau du robinet, même bouillie. Utilisez de l’eau embouteillée pour boire, cuisiner et préparer le lait maternisé.',
       preview: 'Aperçu : ce que verront les résidents',
       source: 'Décidé par',

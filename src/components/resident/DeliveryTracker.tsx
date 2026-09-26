@@ -81,7 +81,7 @@ export function DeliveryTracker({ delivery, onAdvance }: { delivery: Delivery; o
                     ? 'bg-teal border-teal text-white ring-4 ring-teal/25'
                     : reached
                       ? 'bg-teal border-teal text-white'
-                      : 'bg-white border-slate-200 text-slate-400'
+                      : 'bg-white border-slate-300 text-slate-500'
                 }`}
               >
                 {done && !active ? <Check aria-hidden="true" className="h-6 w-6" strokeWidth={3} /> : <Icon aria-hidden="true" className="h-6 w-6" />}
