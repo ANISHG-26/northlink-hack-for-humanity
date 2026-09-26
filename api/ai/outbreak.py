@@ -1,5 +1,8 @@
 """Illness cluster detection — pure functions, no I/O.
 
+Output is a SIGNAL FOR STAFF REVIEW, not a diagnosis. It never issues an
+advisory; staff decide with the regional health board.
+
 1. For each zone, count stomach-illness reports in a rolling window (7 days)
    and compare with that zone's usual weekly rate (baseline).
 2. Flag a cluster when the count is well above baseline
@@ -113,8 +116,9 @@ def detect_outbreaks(
         if wq:
             summary += f" {wq} water quality complaint{'s' if wq != 1 else ''} in the zone this week."
 
-        action = f"Boil water advisory for Zone {zone}"
-        action += f" and testing for {truck}." if shared.truck_id else " and water testing in the zone."
+        # The AI never issues advisories. It suggests what staff should check with health authorities.
+        action = f"check with the regional health board about a boil water advisory for Zone {zone}"
+        action += f", and about testing {truck}." if shared.truck_id else ", and about water testing in the zone."
 
         how = [
             f"Counted illness reports in each zone over the last {WINDOW_DAYS} days.",
@@ -145,7 +149,7 @@ def detect_outbreaks(
                 water_quality_reports=wq,
                 suggested_level="boil",
                 summary=summary,
-                recommended_action=f"Recommended: {action}",
+                recommended_action=f"Suggested for staff review: {action}",
                 how_detected=how,
             )
         )

@@ -5,6 +5,9 @@ from typing import Literal
 from pydantic import BaseModel
 
 Zone = Literal["A", "B", "C", "D", "E", "F"]
+VulnerableType = Literal["elder", "infant", "medical"]
+MeasurementSource = Literal["sensor", "estimated"]
+Service = Literal["water", "sewage"]
 
 
 class Household(BaseModel):
@@ -14,9 +17,18 @@ class Household(BaseModel):
     tank_capacity_l: int
     current_level_l: int
     last_delivery: date
+    last_delivery_litres: int = 1000  # logged by the driver
     vulnerable: bool  # elders, infants, or medical needs
-    vulnerable_type: Literal["elder", "infant", "medical"] | None = None
+    vulnerable_type: VulnerableType | None = None
     last_truck_id: str
+    # How we know the clean-water level: load-cell tank sensor, or estimate from last delivery.
+    measurement_source: MeasurementSource = "estimated"
+    empty_tank_weight_kg: float | None = None
+    # Wastewater (sewage) tank. When full, a red light turns on and the home cannot use water.
+    sewage_capacity_l: int = 1000
+    sewage_level_l: int = 0
+    last_sewage_pickup: date | None = None
+    sensor_leak_demo: bool = False  # seed only: simulate a leak on this sensor
 
 
 class Truck(BaseModel):
@@ -56,21 +68,44 @@ class Partner(BaseModel):
 
 
 WaterStatus = Literal["safe", "boil", "nodrink"]
+AdvisorySource = Literal["Municipal water office", "Regional health board"]
 
 
 class Advisory(BaseModel):
+    """Official advisory. Only staff issue these; Northlink never decides water safety."""
+
     zone: Zone
     status: WaterStatus  # "boil" or "nodrink" for an active advisory
     since: date
     reason: str
     message: str | None = None
     issued_at: datetime | None = None
+    source: AdvisorySource = "Municipal water office"
 
 
 class AdvisoryIn(BaseModel):
     zone: Zone
     level: Literal["boil", "do_not_drink"]
     message: str
+    source: AdvisorySource = "Municipal water office"
+
+
+ReportType = Literal["clean_water_low", "sewage_full", "water_quality", "tank_damage", "illness", "other"]
+
+
+class ReportIn(BaseModel):
+    type: ReportType
+    household_id: str
+    timestamp: datetime | None = None
+    note: str | None = None
+    # Set when the resident typed a description and confirmed the classifier's guess.
+    classifier_category: ReportType | None = None
+
+
+class Report(ReportIn):
+    id: str
+    timestamp: datetime
+    zone: Zone
 
 
 class SeedData(BaseModel):
@@ -83,7 +118,7 @@ class SeedData(BaseModel):
     advisories: list[Advisory] = []
     baseline_weekly_illness: dict[str, float] = {}
     partners: list[Partner] = []
-    resident_reports: list["Report"] = []
+    resident_reports: list[Report] = []
 
 
 # --- Resident status ---------------------------------------------------------
@@ -105,12 +140,31 @@ class Forecast(BaseModel):
     method: Literal["household_size", "blended"]
 
 
+class SewageStatus(BaseModel):
+    litres: int
+    capacity_l: int
+    percent: int
+    daily_inflow_l: int
+    days_until_full: float
+    predicted_full: datetime
+    is_full: bool
+
+
+class Measurement(BaseModel):
+    source: MeasurementSource
+    updated_at: datetime
+    note: str
+
+
 class Safety(BaseModel):
     status: WaterStatus
     zone: Zone
     since: date | None
     reason: str | None
     message: str | None = None
+    source: AdvisorySource | None = None
+    issued_at: datetime | None = None
+    last_checked: datetime
 
 
 class Delivery(BaseModel):
@@ -125,6 +179,8 @@ class Delivery(BaseModel):
 class HouseholdStatus(BaseModel):
     household: Household
     forecast: Forecast
+    sewage: SewageStatus
+    measurement: Measurement
     safety: Safety
     delivery: Delivery
 
@@ -133,20 +189,51 @@ class LevelUpdate(BaseModel):
     level: LevelChoice
 
 
-ReportType = Literal["water_quality", "tank_damage", "illness"]
+# --- Sensor ----------------------------------------------------------------------
 
 
-class ReportIn(BaseModel):
-    type: ReportType
+class SensorPoint(BaseModel):
+    at: datetime
+    litres: float
+
+
+class LeakSignalOut(BaseModel):
+    kind: Literal["sudden_drop", "overnight_loss"]
+    start: datetime
+    end: datetime
+    litres_lost: float
+    rate_l_per_h: float
+    note: str
+
+
+class SensorReading(BaseModel):
     household_id: str
-    timestamp: datetime | None = None
-    note: str | None = None
+    empty_tank_kg: float
+    raw_weight_kg: float  # live, noisy load-cell reading
+    smoothed_weight_kg: float
+    litres: float
+    capacity_l: int
+    updated_at: datetime
+    series_24h: list[SensorPoint]
+    leak: LeakSignalOut | None
 
 
-class Report(ReportIn):
-    id: str
-    timestamp: datetime
-    zone: Zone
+class SimulateUsage(BaseModel):
+    litres: float = 25.0
+
+
+# --- Classifier ------------------------------------------------------------------
+
+
+class ClassifyIn(BaseModel):
+    text: str
+
+
+class ClassifyOut(BaseModel):
+    category: ReportType
+    confidence: float
+    matched: list[str]
+    scores: dict[str, float]
 
 
 # --- Driver route ------------------------------------------------------------
@@ -158,9 +245,10 @@ class RouteStop(BaseModel):
     rank: int
     household_id: str
     zone: Zone
-    vulnerable_type: Literal["elder", "infant", "medical"] | None
+    service: Service
+    vulnerable_type: VulnerableType | None
     advisory: WaterStatus | None
-    hours_until_empty: float
+    hours_until_empty: float  # water: until empty; sewage: until full
     litres_left: int
     litres_to_fill: int
     urgency: Urgency
@@ -173,6 +261,7 @@ class Completion(BaseModel):
     household_id: str
     zone: Zone
     truck_id: str
+    service: Service = "water"
     at: datetime
 
 
@@ -186,6 +275,7 @@ class RouteToday(BaseModel):
 class CompleteIn(BaseModel):
     truck_id: str | None = None
     timestamp: datetime | None = None
+    service: Service = "water"
 
 
 # --- Dispatcher ---------------------------------------------------------------
@@ -198,16 +288,39 @@ class ZoneStatus(BaseModel):
     households: int
     out_of_water: int
     running_low: int
+    sewage_full: int
     illness_7d: int
     advisory: WaterStatus | None
     status: ZoneState
 
 
+class LeakFlag(BaseModel):
+    household_id: str
+    zone: Zone
+    kind: Literal["sudden_drop", "overnight_loss"]
+    litres_lost: float
+    at: datetime
+    note: str
+
+
+class Staffing(BaseModel):
+    drivers_available: int
+    drivers_needed: int
+    trucks_in_service: int
+    trucks_total: int
+
+
 class Dashboard(BaseModel):
     out_of_water: int
     running_low: int
+    sewage_full: int
     delivered_today: int
     active_advisories: int
+    sensor_homes: int
+    estimated_homes: int
+    sensor_pct: int
+    possible_leaks: list[LeakFlag]
+    staffing: Staffing
     zones: list[ZoneStatus]
 
 
@@ -222,6 +335,8 @@ class SharedFactorOut(BaseModel):
 
 
 class OutbreakAlertOut(BaseModel):
+    """A signal for staff review — not a diagnosis, never an automatic advisory."""
+
     zone: Zone
     count: int
     window_days: int
@@ -236,6 +351,20 @@ class OutbreakAlertOut(BaseModel):
     summary: str
     recommended_action: str
     how_detected: list[str]
+
+
+class AttentionItemOut(BaseModel):
+    id: str
+    kind: Literal[
+        "sewage_full", "out_of_water", "clean_water_low", "illness", "water_quality", "possible_leak", "tank_damage", "other"
+    ]
+    household_id: str
+    zone: Zone
+    at: datetime
+    score: int
+    priority: Urgency
+    why: str
+    detail: str | None
 
 
 # --- Parts / sealift -----------------------------------------------------------
@@ -281,6 +410,3 @@ class SealiftPlan(BaseModel):
 class Health(BaseModel):
     status: Literal["ok"]
     version: str
-
-
-SeedData.model_rebuild()

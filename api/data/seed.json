@@ -11,7 +11,14 @@
       "last_delivery": "2026-09-21",
       "vulnerable": false,
       "last_truck_id": "T1",
-      "vulnerable_type": null
+      "vulnerable_type": null,
+      "measurement_source": "sensor",
+      "empty_tank_weight_kg": 95.0,
+      "last_delivery_litres": 1000,
+      "sewage_capacity_l": 1000,
+      "sewage_level_l": 234,
+      "last_sewage_pickup": "2026-09-21",
+      "sensor_leak_demo": false
     },
     {
       "id": "A-07",
@@ -22,7 +29,14 @@
       "last_delivery": "2026-09-26",
       "vulnerable": false,
       "last_truck_id": "T1",
-      "vulnerable_type": null
+      "vulnerable_type": null,
+      "measurement_source": "estimated",
+      "empty_tank_weight_kg": null,
+      "last_delivery_litres": 1000,
+      "sewage_capacity_l": 1000,
+      "sewage_level_l": 129,
+      "last_sewage_pickup": "2026-09-26",
+      "sensor_leak_demo": false
     },
     {
       "id": "A-08",
@@ -33,7 +47,14 @@
       "last_delivery": "2026-09-22",
       "vulnerable": false,
       "last_truck_id": "T1",
-      "vulnerable_type": null
+      "vulnerable_type": null,
+      "measurement_source": "estimated",
+      "empty_tank_weight_kg": null,
+      "last_delivery_litres": 1000,
+      "sewage_capacity_l": 1000,
+      "sewage_level_l": 628,
+      "last_sewage_pickup": "2026-09-22",
+      "sensor_leak_demo": false
     },
     {
       "id": "A-09",
@@ -44,7 +65,14 @@
       "last_delivery": "2026-09-22",
       "vulnerable": false,
       "last_truck_id": "T1",
-      "vulnerable_type": null
+      "vulnerable_type": null,
+      "measurement_source": "sensor",
+      "empty_tank_weight_kg": 95.0,
+      "last_delivery_litres": 1000,
+      "sewage_capacity_l": 1000,
+      "sewage_level_l": 676,
+      "last_sewage_pickup": "2026-09-22",
+      "sensor_leak_demo": false
     },
     {
       "id": "A-15",
@@ -55,7 +83,14 @@
       "last_delivery": "2026-09-21",
       "vulnerable": true,
       "last_truck_id": "T1",
-      "vulnerable_type": "elder"
+      "vulnerable_type": "elder",
+      "measurement_source": "estimated",
+      "empty_tank_weight_kg": null,
+      "last_delivery_litres": 1000,
+      "sewage_capacity_l": 1000,
+      "sewage_level_l": 599,
+      "last_sewage_pickup": "2026-09-21",
+      "sensor_leak_demo": false
     },
     {
       "id": "A-16",
@@ -66,7 +101,14 @@
       "last_delivery": "2026-09-26",
       "vulnerable": false,
       "last_truck_id": "T1",
-      "vulnerable_type": null
+      "vulnerable_type": null,
+      "measurement_source": "estimated",
+      "empty_tank_weight_kg": null,
+      "last_delivery_litres": 1000,
+      "sewage_capacity_l": 1000,
+      "sewage_level_l": 168,
+      "last_sewage_pickup": "2026-09-26",
+      "sensor_leak_demo": false
     },
     {
       "id": "A-18",
@@ -77,7 +119,14 @@
       "last_delivery": "2026-09-22",
       "vulnerable": false,
       "last_truck_id": "T1",
-      "vulnerable_type": null
+      "vulnerable_type": null,
+      "measurement_source": "sensor",
+      "empty_tank_weight_kg": 95.0,
+      "last_delivery_litres": 1000,
+      "sewage_capacity_l": 1000,
+      "sewage_level_l": 151,
+      "last_sewage_pickup": "2026-09-22",
+      "sensor_leak_demo": false
     },
     {
       "id": "B-06",
@@ -88,7 +137,14 @@
       "last_delivery": "2026-09-26",
       "vulnerable": false,
       "last_truck_id": "T1",
-      "vulnerable_type": null
+      "vulnerable_type": null,
+      "measurement_source": "estimated",
+      "empty_tank_weight_kg": null,
+      "last_delivery_litres": 1000,
+      "sewage_capacity_l": 1000,
+      "sewage_level_l": 644,
+      "last_sewage_pickup": "2026-09-26",
+      "sensor_leak_demo": false
     },
     {
       "id": "B-08",
@@ -99,7 +155,14 @@
       "last_delivery": "2026-09-20",
       "vulnerable": false,
       "last_truck_id": "T1",
-      "vulnerable_type": null
+      "vulnerable_type": null,
+      "measurement_source": "estimated",
+      "empty_tank_weight_kg": null,
+      "last_delivery_litres": 1000,
+      "sewage_capacity_l": 1000,
+      "sewage_level_l": 659,
+      "last_sewage_pickup": "2026-09-20",
+      "sensor_leak_demo": false
     },
     {
       "id": "B-13",
@@ -110,7 +173,14 @@
       "last_delivery": "2026-09-25",
       "vulnerable": false,
       "last_truck_id": "T1",
-      "vulnerable_type": null
+      "vulnerable_type": null,
+      "measurement_source": "sensor",
+      "empty_tank_weight_kg": 95.0,
+      "last_delivery_litres": 1000,
+      "sewage_capacity_l": 1000,
+      "sewage_level_l": 308,
+      "last_sewage_pickup": "2026-09-25",
+      "sensor_leak_demo": true
     },
     {
       "id": "B-19",
@@ -121,7 +191,14 @@
       "last_delivery": "2026-09-21",
       "vulnerable": false,
       "last_truck_id": "T1",
-      "vulnerable_type": null
+      "vulnerable_type": null,
+      "measurement_source": "estimated",
+      "empty_tank_weight_kg": null,
+      "last_delivery_litres": 1000,
+      "sewage_capacity_l": 1000,
+      "sewage_level_l": 676,
+      "last_sewage_pickup": "2026-09-21",
+      "sensor_leak_demo": false
     },
     {
       "id": "B-24",
@@ -132,7 +209,14 @@
       "last_delivery": "2026-09-25",
       "vulnerable": false,
       "last_truck_id": "T1",
-      "vulnerable_type": null
+      "vulnerable_type": null,
+      "measurement_source": "estimated",
+      "empty_tank_weight_kg": null,
+      "last_delivery_litres": 950,
+      "sewage_capacity_l": 1000,
+      "sewage_level_l": 670,
+      "last_sewage_pickup": "2026-09-25",
+      "sensor_leak_demo": false
     },
     {
       "id": "B-25",
@@ -143,7 +227,14 @@
       "last_delivery": "2026-09-21",
       "vulnerable": false,
       "last_truck_id": "T1",
-      "vulnerable_type": null
+      "vulnerable_type": null,
+      "measurement_source": "sensor",
+      "empty_tank_weight_kg": 95.0,
+      "last_delivery_litres": 1000,
+      "sewage_capacity_l": 1000,
+      "sewage_level_l": 130,
+      "last_sewage_pickup": "2026-09-21",
+      "sensor_leak_demo": false
     },
     {
       "id": "B-35",
@@ -154,7 +245,14 @@
       "last_delivery": "2026-09-25",
       "vulnerable": false,
       "last_truck_id": "T1",
-      "vulnerable_type": null
+      "vulnerable_type": null,
+      "measurement_source": "estimated",
+      "empty_tank_weight_kg": null,
+      "last_delivery_litres": 950,
+      "sewage_capacity_l": 1000,
+      "sewage_level_l": 127,
+      "last_sewage_pickup": "2026-09-25",
+      "sensor_leak_demo": false
     },
     {
       "id": "C-05",
@@ -165,7 +263,14 @@
       "last_delivery": "2026-09-22",
       "vulnerable": true,
       "last_truck_id": "T2",
-      "vulnerable_type": "infant"
+      "vulnerable_type": "infant",
+      "measurement_source": "estimated",
+      "empty_tank_weight_kg": null,
+      "last_delivery_litres": 1000,
+      "sewage_capacity_l": 1000,
+      "sewage_level_l": 216,
+      "last_sewage_pickup": "2026-09-22",
+      "sensor_leak_demo": false
     },
     {
       "id": "C-12",
@@ -176,7 +281,14 @@
       "last_delivery": "2026-09-24",
       "vulnerable": true,
       "last_truck_id": "T2",
-      "vulnerable_type": "infant"
+      "vulnerable_type": "infant",
+      "measurement_source": "sensor",
+      "empty_tank_weight_kg": 95.0,
+      "last_delivery_litres": 1000,
+      "sewage_capacity_l": 1000,
+      "sewage_level_l": 640,
+      "last_sewage_pickup": "2026-09-24",
+      "sensor_leak_demo": false
     },
     {
       "id": "C-14",
@@ -187,7 +299,14 @@
       "last_delivery": "2026-09-22",
       "vulnerable": false,
       "last_truck_id": "T2",
-      "vulnerable_type": null
+      "vulnerable_type": null,
+      "measurement_source": "estimated",
+      "empty_tank_weight_kg": null,
+      "last_delivery_litres": 1000,
+      "sewage_capacity_l": 1000,
+      "sewage_level_l": 200,
+      "last_sewage_pickup": "2026-09-22",
+      "sensor_leak_demo": false
     },
     {
       "id": "C-21",
@@ -198,7 +317,14 @@
       "last_delivery": "2026-09-22",
       "vulnerable": false,
       "last_truck_id": "T2",
-      "vulnerable_type": null
+      "vulnerable_type": null,
+      "measurement_source": "estimated",
+      "empty_tank_weight_kg": null,
+      "last_delivery_litres": 1000,
+      "sewage_capacity_l": 1000,
+      "sewage_level_l": 653,
+      "last_sewage_pickup": "2026-09-22",
+      "sensor_leak_demo": false
     },
     {
       "id": "C-26",
@@ -209,7 +335,14 @@
       "last_delivery": "2026-09-22",
       "vulnerable": true,
       "last_truck_id": "T2",
-      "vulnerable_type": "elder"
+      "vulnerable_type": "elder",
+      "measurement_source": "sensor",
+      "empty_tank_weight_kg": 95.0,
+      "last_delivery_litres": 950,
+      "sewage_capacity_l": 1000,
+      "sewage_level_l": 265,
+      "last_sewage_pickup": "2026-09-22",
+      "sensor_leak_demo": false
     },
     {
       "id": "C-32",
@@ -220,7 +353,14 @@
       "last_delivery": "2026-09-20",
       "vulnerable": false,
       "last_truck_id": "T2",
-      "vulnerable_type": null
+      "vulnerable_type": null,
+      "measurement_source": "estimated",
+      "empty_tank_weight_kg": null,
+      "last_delivery_litres": 1000,
+      "sewage_capacity_l": 1000,
+      "sewage_level_l": 664,
+      "last_sewage_pickup": "2026-09-20",
+      "sensor_leak_demo": false
     },
     {
       "id": "C-37",
@@ -231,7 +371,14 @@
       "last_delivery": "2026-09-23",
       "vulnerable": false,
       "last_truck_id": "T2",
-      "vulnerable_type": null
+      "vulnerable_type": null,
+      "measurement_source": "estimated",
+      "empty_tank_weight_kg": null,
+      "last_delivery_litres": 1000,
+      "sewage_capacity_l": 1000,
+      "sewage_level_l": 461,
+      "last_sewage_pickup": "2026-09-23",
+      "sensor_leak_demo": false
     },
     {
       "id": "D-01",
@@ -242,7 +389,14 @@
       "last_delivery": "2026-09-22",
       "vulnerable": false,
       "last_truck_id": "T2",
-      "vulnerable_type": null
+      "vulnerable_type": null,
+      "measurement_source": "sensor",
+      "empty_tank_weight_kg": 95.0,
+      "last_delivery_litres": 1000,
+      "sewage_capacity_l": 1000,
+      "sewage_level_l": 144,
+      "last_sewage_pickup": "2026-09-22",
+      "sensor_leak_demo": false
     },
     {
       "id": "D-08",
@@ -253,7 +407,14 @@
       "last_delivery": "2026-09-24",
       "vulnerable": false,
       "last_truck_id": "T2",
-      "vulnerable_type": null
+      "vulnerable_type": null,
+      "measurement_source": "estimated",
+      "empty_tank_weight_kg": null,
+      "last_delivery_litres": 1000,
+      "sewage_capacity_l": 1000,
+      "sewage_level_l": 1000,
+      "last_sewage_pickup": "2026-09-24",
+      "sensor_leak_demo": false
     },
     {
       "id": "D-11",
@@ -264,7 +425,14 @@
       "last_delivery": "2026-09-24",
       "vulnerable": false,
       "last_truck_id": "T2",
-      "vulnerable_type": null
+      "vulnerable_type": null,
+      "measurement_source": "estimated",
+      "empty_tank_weight_kg": null,
+      "last_delivery_litres": 1000,
+      "sewage_capacity_l": 1000,
+      "sewage_level_l": 588,
+      "last_sewage_pickup": "2026-09-24",
+      "sensor_leak_demo": false
     },
     {
       "id": "D-19",
@@ -275,7 +443,14 @@
       "last_delivery": "2026-09-26",
       "vulnerable": true,
       "last_truck_id": "T2",
-      "vulnerable_type": "infant"
+      "vulnerable_type": "infant",
+      "measurement_source": "sensor",
+      "empty_tank_weight_kg": 95.0,
+      "last_delivery_litres": 1000,
+      "sewage_capacity_l": 1000,
+      "sewage_level_l": 517,
+      "last_sewage_pickup": "2026-09-26",
+      "sensor_leak_demo": false
     },
     {
       "id": "D-22",
@@ -286,7 +461,14 @@
       "last_delivery": "2026-09-20",
       "vulnerable": true,
       "last_truck_id": "T2",
-      "vulnerable_type": "medical"
+      "vulnerable_type": "medical",
+      "measurement_source": "estimated",
+      "empty_tank_weight_kg": null,
+      "last_delivery_litres": 950,
+      "sewage_capacity_l": 1000,
+      "sewage_level_l": 556,
+      "last_sewage_pickup": "2026-09-20",
+      "sensor_leak_demo": false
     },
     {
       "id": "D-28",
@@ -297,7 +479,14 @@
       "last_delivery": "2026-09-26",
       "vulnerable": false,
       "last_truck_id": "T2",
-      "vulnerable_type": null
+      "vulnerable_type": null,
+      "measurement_source": "estimated",
+      "empty_tank_weight_kg": null,
+      "last_delivery_litres": 1000,
+      "sewage_capacity_l": 1000,
+      "sewage_level_l": 544,
+      "last_sewage_pickup": "2026-09-26",
+      "sensor_leak_demo": false
     },
     {
       "id": "D-30",
@@ -308,7 +497,14 @@
       "last_delivery": "2026-09-20",
       "vulnerable": false,
       "last_truck_id": "T2",
-      "vulnerable_type": null
+      "vulnerable_type": null,
+      "measurement_source": "sensor",
+      "empty_tank_weight_kg": 95.0,
+      "last_delivery_litres": 1000,
+      "sewage_capacity_l": 1000,
+      "sewage_level_l": 334,
+      "last_sewage_pickup": "2026-09-20",
+      "sensor_leak_demo": false
     },
     {
       "id": "E-11",
@@ -319,7 +515,14 @@
       "last_delivery": "2026-09-23",
       "vulnerable": false,
       "last_truck_id": "T3",
-      "vulnerable_type": null
+      "vulnerable_type": null,
+      "measurement_source": "estimated",
+      "empty_tank_weight_kg": null,
+      "last_delivery_litres": 950,
+      "sewage_capacity_l": 1000,
+      "sewage_level_l": 1000,
+      "last_sewage_pickup": "2026-09-23",
+      "sensor_leak_demo": false
     },
     {
       "id": "E-13",
@@ -330,7 +533,14 @@
       "last_delivery": "2026-09-23",
       "vulnerable": true,
       "last_truck_id": "T3",
-      "vulnerable_type": "elder"
+      "vulnerable_type": "elder",
+      "measurement_source": "estimated",
+      "empty_tank_weight_kg": null,
+      "last_delivery_litres": 1000,
+      "sewage_capacity_l": 1000,
+      "sewage_level_l": 329,
+      "last_sewage_pickup": "2026-09-23",
+      "sensor_leak_demo": false
     },
     {
       "id": "E-14",
@@ -341,7 +551,14 @@
       "last_delivery": "2026-09-22",
       "vulnerable": true,
       "last_truck_id": "T3",
-      "vulnerable_type": "infant"
+      "vulnerable_type": "infant",
+      "measurement_source": "sensor",
+      "empty_tank_weight_kg": 95.0,
+      "last_delivery_litres": 1000,
+      "sewage_capacity_l": 1000,
+      "sewage_level_l": 387,
+      "last_sewage_pickup": "2026-09-22",
+      "sensor_leak_demo": false
     },
     {
       "id": "E-17",
@@ -352,7 +569,14 @@
       "last_delivery": "2026-09-21",
       "vulnerable": true,
       "last_truck_id": "T3",
-      "vulnerable_type": "medical"
+      "vulnerable_type": "medical",
+      "measurement_source": "estimated",
+      "empty_tank_weight_kg": null,
+      "last_delivery_litres": 1000,
+      "sewage_capacity_l": 1000,
+      "sewage_level_l": 431,
+      "last_sewage_pickup": "2026-09-21",
+      "sensor_leak_demo": false
     },
     {
       "id": "E-28",
@@ -363,7 +587,14 @@
       "last_delivery": "2026-09-20",
       "vulnerable": true,
       "last_truck_id": "T3",
-      "vulnerable_type": "elder"
+      "vulnerable_type": "elder",
+      "measurement_source": "estimated",
+      "empty_tank_weight_kg": null,
+      "last_delivery_litres": 950,
+      "sewage_capacity_l": 1000,
+      "sewage_level_l": 374,
+      "last_sewage_pickup": "2026-09-20",
+      "sensor_leak_demo": false
     },
     {
       "id": "E-34",
@@ -374,7 +605,14 @@
       "last_delivery": "2026-09-23",
       "vulnerable": false,
       "last_truck_id": "T3",
-      "vulnerable_type": null
+      "vulnerable_type": null,
+      "measurement_source": "sensor",
+      "empty_tank_weight_kg": 95.0,
+      "last_delivery_litres": 1000,
+      "sewage_capacity_l": 1000,
+      "sewage_level_l": 154,
+      "last_sewage_pickup": "2026-09-23",
+      "sensor_leak_demo": false
     },
     {
       "id": "F-16",
@@ -385,7 +623,14 @@
       "last_delivery": "2026-09-26",
       "vulnerable": false,
       "last_truck_id": "T3",
-      "vulnerable_type": null
+      "vulnerable_type": null,
+      "measurement_source": "estimated",
+      "empty_tank_weight_kg": null,
+      "last_delivery_litres": 1000,
+      "sewage_capacity_l": 1000,
+      "sewage_level_l": 508,
+      "last_sewage_pickup": "2026-09-26",
+      "sensor_leak_demo": false
     },
     {
       "id": "F-27",
@@ -396,7 +641,14 @@
       "last_delivery": "2026-09-23",
       "vulnerable": false,
       "last_truck_id": "T3",
-      "vulnerable_type": null
+      "vulnerable_type": null,
+      "measurement_source": "estimated",
+      "empty_tank_weight_kg": null,
+      "last_delivery_litres": 1000,
+      "sewage_capacity_l": 1000,
+      "sewage_level_l": 430,
+      "last_sewage_pickup": "2026-09-23",
+      "sensor_leak_demo": false
     },
     {
       "id": "F-31",
@@ -407,7 +659,14 @@
       "last_delivery": "2026-09-26",
       "vulnerable": false,
       "last_truck_id": "T3",
-      "vulnerable_type": null
+      "vulnerable_type": null,
+      "measurement_source": "sensor",
+      "empty_tank_weight_kg": 95.0,
+      "last_delivery_litres": 1000,
+      "sewage_capacity_l": 1000,
+      "sewage_level_l": 580,
+      "last_sewage_pickup": "2026-09-26",
+      "sensor_leak_demo": false
     },
     {
       "id": "F-37",
@@ -418,7 +677,14 @@
       "last_delivery": "2026-09-25",
       "vulnerable": false,
       "last_truck_id": "T3",
-      "vulnerable_type": null
+      "vulnerable_type": null,
+      "measurement_source": "estimated",
+      "empty_tank_weight_kg": null,
+      "last_delivery_litres": 1000,
+      "sewage_capacity_l": 1000,
+      "sewage_level_l": 159,
+      "last_sewage_pickup": "2026-09-25",
+      "sensor_leak_demo": false
     },
     {
       "id": "F-38",
@@ -429,7 +695,14 @@
       "last_delivery": "2026-09-25",
       "vulnerable": false,
       "last_truck_id": "T3",
-      "vulnerable_type": null
+      "vulnerable_type": null,
+      "measurement_source": "estimated",
+      "empty_tank_weight_kg": null,
+      "last_delivery_litres": 950,
+      "sewage_capacity_l": 1000,
+      "sewage_level_l": 666,
+      "last_sewage_pickup": "2026-09-25",
+      "sensor_leak_demo": false
     },
     {
       "id": "F-39",
@@ -440,7 +713,14 @@
       "last_delivery": "2026-09-23",
       "vulnerable": true,
       "last_truck_id": "T3",
-      "vulnerable_type": "infant"
+      "vulnerable_type": "infant",
+      "measurement_source": "sensor",
+      "empty_tank_weight_kg": 95.0,
+      "last_delivery_litres": 950,
+      "sewage_capacity_l": 1000,
+      "sewage_level_l": 401,
+      "last_sewage_pickup": "2026-09-23",
+      "sensor_leak_demo": false
     }
   ],
   "trucks": [
@@ -687,5 +967,16 @@
       ],
       "request_template": "parts"
     }
-  ]
+  ],
+  "context": {
+    "community": "Inukjuak, Nunavik",
+    "residents": "over 2,000 (more than half under 20)",
+    "water_trucks": 3,
+    "notes": [
+      "Chronic shortage of qualified drivers",
+      "No mandatory water quality monitoring in trucks or household tanks",
+      "Long-term plan for a water pipeline",
+      "Residents currently have no reliable way to know how much water is left"
+    ]
+  }
 }

@@ -14,6 +14,11 @@ MAX_LPCD = 150.0
 # How many days of observed readings before we trust them most (max weight).
 FULL_TRUST_DAYS = 4.0
 MAX_OBSERVED_WEIGHT = 0.8
+# A rise bigger than this is a refill (smaller rises are sensor noise).
+REFILL_MIN_L = 50.0
+# Wastewater: nearly all water used goes down the drain into the sewage tank.
+SEWAGE_RETURN_FRACTION = 0.95
+SEWAGE_FULL_FRACTION = 0.95  # red light threshold
 
 Confidence = Literal["low", "medium", "high"]
 
@@ -40,7 +45,7 @@ def _since_last_refill(readings: list[Reading]) -> list[Reading]:
     ordered = sorted(readings, key=lambda r: r.at)
     start = 0
     for i in range(1, len(ordered)):
-        if ordered[i].litres > ordered[i - 1].litres:
+        if ordered[i].litres - ordered[i - 1].litres > REFILL_MIN_L:
             start = i
     return ordered[start:]
 
@@ -103,4 +108,37 @@ def forecast(
         confidence=confidence,
         confidence_note=note,
         method=method,
+    )
+
+
+@dataclass(frozen=True)
+class SewageForecast:
+    litres: float
+    capacity_l: float
+    daily_inflow_l: float
+    days_until_full: float
+    predicted_full: datetime
+    is_full: bool
+
+
+def forecast_sewage(
+    capacity_l: float,
+    last_level_l: float,
+    last_level_at: datetime,
+    daily_water_use_l: float,
+    now: datetime,
+) -> SewageForecast:
+    """Predict when the wastewater tank fills (red light) from the household's water use."""
+    inflow = max(daily_water_use_l * SEWAGE_RETURN_FRACTION, 1.0)
+    elapsed_days = max((now - last_level_at).total_seconds() / 86400, 0.0)
+    level = min(last_level_l + inflow * elapsed_days, capacity_l)
+    full_at = capacity_l * SEWAGE_FULL_FRACTION
+    days = max(full_at - level, 0.0) / inflow
+    return SewageForecast(
+        litres=round(level),
+        capacity_l=capacity_l,
+        daily_inflow_l=round(inflow),
+        days_until_full=round(days, 1),
+        predicted_full=now + timedelta(days=days),
+        is_full=level >= full_at,
     )

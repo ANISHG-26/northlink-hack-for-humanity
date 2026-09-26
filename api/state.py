@@ -2,19 +2,29 @@
 
 Serverless instances are short-lived, so this resets on cold start — fine for
 a demo. Seed dates are shifted so the sample data always looks "current".
+Tank sensors are SIMULATED: we generate plausible load-cell weight readings.
 """
 import json
+import random
 from datetime import date, datetime, time, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from api.ai.forecast import Reading
+from api.ai.sensing import Sample, to_litres_series
 from api.models import DELIVERY_STAGES, Advisory, Completion, Household, Report, SeedData
 
 # Inukjuak is on Eastern Time.
 TZ = ZoneInfo("America/Toronto")
 SEED_PATH = Path(__file__).resolve().parent / "data" / "seed.json"
-SHIFTED_DATE_FIELDS = {"last_delivery", "last_disinfection", "reported", "since"}
+SHIFTED_DATE_FIELDS = {"last_delivery", "last_disinfection", "reported", "since", "last_sewage_pickup"}
+
+SENSOR_STEP = timedelta(minutes=15)
+SENSOR_HISTORY = timedelta(hours=24)
+SENSOR_NOISE_KG = 2.5
+# Relative water use by hour of day (quiet overnight, peaks morning and evening).
+HOURLY_PROFILE = [0.15, 0.1, 0.1, 0.1, 0.1, 0.3, 1.0, 2.0, 2.0, 1.4, 1.0, 1.0,
+                  1.2, 1.0, 0.9, 0.9, 1.1, 1.6, 1.9, 1.8, 1.5, 1.1, 0.6, 0.3]
 
 
 def now() -> datetime:
@@ -46,6 +56,12 @@ def _planned_eta(t: datetime) -> datetime:
     return eta
 
 
+def _slot_use(h: Household, at: datetime) -> float:
+    """Simulated litres used by a household in one 15-minute slot."""
+    daily = h.household_size * 30.0
+    return daily * HOURLY_PROFILE[at.hour] / sum(HOURLY_PROFILE) / 4
+
+
 class State:
     def __init__(self) -> None:
         raw = json.loads(SEED_PATH.read_text(encoding="utf-8"))
@@ -54,25 +70,105 @@ class State:
         self.seed = SeedData.model_validate(_shift_dates(raw, offset))
         self.households: dict[str, Household] = {h.id: h for h in self.seed.households}
         self.trucks = {t.id: t for t in self.seed.trucks}
-        # Resident reports (water quality, tank damage, illness) — seed + new.
-        self.reports: list[Report] = list(self.seed.resident_reports)
-        # Active advisories by zone.
-        self.advisories: dict[str, Advisory] = {a.zone: a for a in self.seed.advisories}
         self.completions: list[Completion] = []
+        # Resident reports (all types) — seed + new.
+        self.reports: list[Report] = list(self.seed.resident_reports)
+        # Active advisories by zone (issued only by staff).
+        self.advisories: dict[str, Advisory] = {a.zone: a for a in self.seed.advisories}
+        self._rng = random.Random(42)
 
-        # Level readings: last delivery (tank full) + the seeded current level.
+        # Clean-water readings that aren't from a sensor: driver-logged deliveries and resident updates.
         self.readings: dict[str, list[Reading]] = {}
+        # Raw load-cell samples (kg) for sensor homes.
+        self.sensor_raw: dict[str, list[Sample]] = {}
+        # Wastewater tank level readings: seeded level, then pickups (reset to 0).
+        self.sewage: dict[str, list[Reading]] = {}
+
         for h in self.seed.households:
             delivered = datetime.combine(h.last_delivery, time(10, 0), TZ)
             if delivered >= start:
                 delivered = start - timedelta(hours=2)
-            self.readings[h.id] = [
-                Reading(delivered, h.tank_capacity_l),
-                Reading(start, h.current_level_l),
-            ]
+            self.readings[h.id] = [Reading(delivered, h.last_delivery_litres)]
+            if h.measurement_source == "sensor":
+                self.sensor_raw[h.id] = self._simulate_history(h, start)
+            self.sewage[h.id] = [Reading(start, h.sewage_level_l)]
 
         # Delivery tracker per household (created lazily).
         self.deliveries: dict[str, dict] = {}
+
+    # --- simulated tank sensors -------------------------------------------------
+
+    def _noisy(self, h: Household, litres: float) -> float:
+        kg = (h.empty_tank_weight_kg or 0) + litres + self._rng.gauss(0, SENSOR_NOISE_KG)
+        if self._rng.random() < 0.02:  # occasional spike (someone leaning on the tank)
+            kg += 25
+        return round(kg, 1)
+
+    def _simulate_history(self, h: Household, end: datetime) -> list[Sample]:
+        """24 h of load-cell samples ending at `end`, finishing at the seeded level."""
+        slots = int(SENSOR_HISTORY / SENSOR_STEP)
+        times = [end - SENSOR_STEP * (slots - i) for i in range(slots + 1)]
+        uses = [_slot_use(h, t) for t in times[1:]]
+        if h.sensor_leak_demo:  # burst about 3 hours ago
+            uses[slots - 12] += 150
+            uses[slots - 11] += 130
+        level = min(h.current_level_l + sum(uses), h.tank_capacity_l)
+        out = [Sample(times[0], self._noisy(h, level))]
+        for t, u in zip(times[1:], uses):
+            level = max(level - u, 0.0)
+            out.append(Sample(t, self._noisy(h, level)))
+        return out
+
+    def sensor_tick(self, household_id: str) -> None:
+        """Advance a simulated sensor to now in 15-minute steps."""
+        raw = self.sensor_raw.get(household_id)
+        if not raw:
+            return
+        h = self.households[household_id]
+        t = now()
+        while raw[-1].at + SENSOR_STEP <= t:
+            at = raw[-1].at + SENSOR_STEP
+            litres = self.sensor_litres(household_id)[-1].value
+            raw.append(Sample(at, self._noisy(h, max(litres - _slot_use(h, at), 0.0))))
+        cutoff = t - SENSOR_HISTORY - SENSOR_STEP
+        while len(raw) > 2 and raw[0].at < cutoff:
+            raw.pop(0)
+
+    def sensor_litres(self, household_id: str) -> list[Sample]:
+        h = self.households[household_id]
+        return to_litres_series(self.sensor_raw[household_id], h.empty_tank_weight_kg or 0, h.tank_capacity_l)
+
+    def sensor_set_litres(self, household_id: str, litres: float, at: datetime | None = None) -> None:
+        """Record new load-cell samples at a given water level (usage, refill)."""
+        h = self.households[household_id]
+        at = at or now()
+        # Several samples so the median filter treats it as a real change, not a spike.
+        for i in range(3):
+            self.sensor_raw[household_id].append(Sample(at + timedelta(seconds=i), self._noisy(h, litres)))
+
+    def live_weight(self, household_id: str) -> float:
+        h = self.households[household_id]
+        return self._noisy(h, self.sensor_litres(household_id)[-1].value)
+
+    # --- clean water readings ------------------------------------------------------
+
+    def water_readings(self, household_id: str) -> list[Reading]:
+        """All clean-water level observations used by the forecast."""
+        readings = list(self.readings[household_id])
+        if household_id in self.sensor_raw:
+            self.sensor_tick(household_id)
+            series = self.sensor_litres(household_id)
+            hourly = series[::4] + [series[-1]]
+            readings += [Reading(s.at, s.value) for s in hourly]
+        return readings
+
+    def record_fill(self, household_id: str, at: datetime) -> None:
+        h = self.households[household_id]
+        self.readings[household_id].append(Reading(at, h.tank_capacity_l))
+        if household_id in self.sensor_raw:
+            self.sensor_set_litres(household_id, h.tank_capacity_l, at)
+
+    # --- deliveries --------------------------------------------------------------------
 
     def delivery(self, household_id: str) -> dict:
         if household_id not in self.deliveries:
@@ -93,24 +189,27 @@ class State:
             d["eta"] = t + timedelta(minutes=8)
         elif stage == "delivered":
             d["eta"] = t
-            h = self.households[household_id]
-            self.readings[household_id].append(Reading(t, h.tank_capacity_l))
+            self.record_fill(household_id, t)
         d["stage_index"] = idx
         d["updated_at"] = t
         return d
 
-    def complete_delivery(self, household_id: str, truck_id: str, at: datetime) -> Completion:
-        """Driver filled the tank. Idempotent per household per day (queued replays may repeat)."""
+    def complete(self, household_id: str, truck_id: str, at: datetime, service: str) -> Completion:
+        """Driver filled the clean tank or emptied the wastewater tank.
+        Idempotent per household, service and day (queued offline replays may repeat)."""
         t = now()
         at = min(at.astimezone(TZ), t)
         for c in self.completions:
-            if c.household_id == household_id and c.at.date() == at.date():
+            if c.household_id == household_id and c.service == service and c.at.date() == at.date():
                 return c
         h = self.households[household_id]
-        self.readings[household_id].append(Reading(at, h.tank_capacity_l))
-        d = self.delivery(household_id)
-        d.update(stage_index=DELIVERY_STAGES.index("delivered"), eta=at, updated_at=t)
-        c = Completion(household_id=household_id, zone=h.zone, truck_id=truck_id, at=at)
+        if service == "sewage":
+            self.sewage[household_id].append(Reading(at, 0))
+        else:
+            self.record_fill(household_id, at)
+            d = self.delivery(household_id)
+            d.update(stage_index=DELIVERY_STAGES.index("delivered"), eta=at, updated_at=t)
+        c = Completion(household_id=household_id, zone=h.zone, truck_id=truck_id, service=service, at=at)
         self.completions.append(c)
         return c
 
