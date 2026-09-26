@@ -1,9 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
 import { CircleCheckBig, Flame, LoaderCircle, Megaphone, OctagonX, TriangleAlert, X } from 'lucide-react'
 import { api } from '../api/client'
-import type { Advisory, Dashboard, OutbreakAlert, Zone } from '../api/types'
+import type { Advisory, AttentionItem, Dashboard, OutbreakAlert, Zone } from '../api/types'
 import { OfflineBanner } from '../components/OfflineBanner'
 import { AdvisoryDialog } from '../components/dispatcher/AdvisoryDialog'
+import { AttentionList } from '../components/dispatcher/AttentionList'
+import { SensorCoverage, StaffingCard } from '../components/dispatcher/OpsPanels'
+import { StaffGate } from '../components/dispatcher/StaffGate'
 import { OutbreakPanel } from '../components/dispatcher/OutbreakPanel'
 import { SummaryCards } from '../components/dispatcher/SummaryCards'
 import { ZoneMap } from '../components/dispatcher/ZoneMap'
@@ -16,6 +19,8 @@ export function DispatcherView() {
   const t = useT()
   const d = t.dispatcher
   const isOnline = useAppStore((s) => s.isOnline)
+  const staff = useAppStore((s) => s.staffPin !== null)
+  const [attention, setAttention] = useState<AttentionItem[]>([])
   const [dash, setDash] = useState<Dashboard | null>(null)
   const [alerts, setAlerts] = useState<OutbreakAlert[]>([])
   const [advisories, setAdvisories] = useState<Advisory[]>([])
@@ -26,10 +31,11 @@ export function DispatcherView() {
 
   const load = useCallback(async () => {
     try {
-      const [a, b, c] = await Promise.all([api.dashboard(), api.outbreaks(), api.advisories()])
+      const [a, b, c, e] = await Promise.all([api.dashboard(), api.outbreaks(), api.advisories(), api.attention()])
       setDash(a.data)
       setAlerts(b.data)
       setAdvisories(c.data)
+      setAttention(e.data)
       setCachedAt(a.fromCache ? a.cachedAt : undefined)
       setError(false)
     } catch {
@@ -86,6 +92,7 @@ export function DispatcherView() {
       <div className="grid gap-5 lg:grid-cols-[3fr_2fr] items-start">
         <ZoneMap zones={dash.zones} />
         <div className="flex flex-col gap-5">
+          <StaffGate />
           <OutbreakPanel alerts={alerts} onIssue={setDialogZone} />
 
           <section aria-labelledby="adv-heading" className="card">
@@ -93,6 +100,7 @@ export function DispatcherView() {
               <h2 id="adv-heading" className="text-xl font-bold text-navy">
                 {d.active}
               </h2>
+              {staff && (
               <button
                 type="button"
                 onClick={() => setDialogZone('C')}
@@ -101,6 +109,7 @@ export function DispatcherView() {
                 <Megaphone aria-hidden="true" className="h-5 w-5" />
                 {d.issue}
               </button>
+              )}
             </div>
             {advisories.length > 0 && (
               <ul className="mt-3 divide-y divide-slate-100">
@@ -116,6 +125,7 @@ export function DispatcherView() {
                         {d.zoneLabel(a.zone)} · {t.safety[a.status]}
                       </span>
                     </span>
+                    {staff && (
                     <button
                       type="button"
                       onClick={() => lift(a.zone)}
@@ -125,11 +135,20 @@ export function DispatcherView() {
                       <X aria-hidden="true" className="h-4 w-4" />
                       {d.lift}
                     </button>
+                    )}
                   </li>
                 ))}
               </ul>
             )}
           </section>
+        </div>
+      </div>
+
+      <div className="grid gap-5 lg:grid-cols-[3fr_2fr] items-start">
+        <AttentionList items={attention} />
+        <div className="flex flex-col gap-5">
+          <SensorCoverage data={dash} />
+          <StaffingCard data={dash} />
         </div>
       </div>
 

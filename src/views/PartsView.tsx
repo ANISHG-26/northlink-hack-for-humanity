@@ -286,7 +286,7 @@ export function PartsView() {
 
       {/* Partners */}
       <section aria-labelledby="partners-heading">
-        <h2 id="partners-heading" className="text-2xl font-bold text-navy">
+        <h2 id="partners-heading" tabIndex={-1} className="text-2xl font-bold text-navy scroll-mt-24">
           {p.partnersTitle}
         </h2>
         <p className="mt-1 inline-flex items-center gap-2 rounded-full bg-amber-50 border border-status-boil px-3 py-1 font-semibold text-status-boil">

@@ -15,6 +15,7 @@ export const iu: Strings = {
     driver: 'Driver', // TODO: community translation review
     dispatcher: 'Dispatcher', // TODO: community translation review
     parts: 'Parts', // TODO: community translation review
+    jobs: 'Jobs', // TODO: community translation review
   },
   online: 'Online', // TODO: community translation review
   offline: 'Offline', // TODO: community translation review
@@ -26,6 +27,7 @@ export const iu: Strings = {
     driver: 'Your delivery route for today.', // TODO: community translation review
     dispatcher: 'Tank forecasts, routing, and illness reports across zones A to F.', // TODO: community translation review
     parts: 'Water system parts and what to order before the next sealift.', // TODO: community translation review
+    jobs: 'Local jobs and training.', // TODO: community translation review
   },
   householdsLoaded: 'households loaded', // TODO: community translation review
   loadError: 'Could not load data.', // TODO: community translation review
@@ -46,4 +48,14 @@ export const iu: Strings = {
   driver: en.driver, // TODO: community translation review
   dispatcher: en.dispatcher, // TODO: community translation review
   parts: en.parts, // TODO: community translation review
+  nav: en.nav, // TODO: community translation review
+  footerKiujik: en.footerKiujik, // TODO: community translation review
+  demoReset: en.demoReset, // TODO: community translation review
+  demoResetDone: en.demoResetDone, // TODO: community translation review
+  demoResetHelp: en.demoResetHelp, // TODO: community translation review
+  tanks: en.tanks, // TODO: community translation review
+  sensor: en.sensor, // TODO: community translation review
+  staff: en.staff, // TODO: community translation review
+  jobs: en.jobs, // TODO: community translation review
+  home: en.home, // TODO: community translation review
 }

@@ -22,9 +22,14 @@ import type {
   Part,
   Partner,
   SealiftPlan,
+  AttentionItem,
+  Classification,
+  SensorReading,
+  Service,
 } from './types'
 
-const CACHE_PREFIX = 'northlink:cache:'
+// Bump the version when API response shapes change so stale caches are ignored.
+const CACHE_PREFIX = 'northlink:cache:v3:'
 const QUEUE_KEY = 'northlink:queue'
 
 interface CacheEntry<T> {
@@ -97,12 +102,26 @@ async function get<T>(path: string): Promise<ApiResult<T>> {
   }
 }
 
-async function rawPost(path: string, body: unknown): Promise<Response> {
+async function rawPost(path: string, body: unknown, headers: Record<string, string> = {}): Promise<Response> {
   return netFetch(`/api${path}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json', ...headers },
     body: JSON.stringify(body),
   })
+}
+
+/** Staff-only calls carry the demo staff PIN. */
+function staffHeaders(): Record<string, string> {
+  const pin = useAppStore.getState().staffPin
+  return pin ? { 'X-Staff-Pin': pin } : {}
+}
+
+/** POST that must reach the server now (no offline queue), e.g. staff actions and classification. */
+async function postNow<T>(path: string, body: unknown, headers: Record<string, string> = {}): Promise<T> {
+  const res = await rawPost(path, body, headers)
+  useAppStore.getState().setOnline(true)
+  if (!res.ok) throw new Error(`HTTP ${res.status}`)
+  return (await res.json()) as T
 }
 
 /** POST result: either the server's response, or `queued` when offline. */
@@ -167,17 +186,27 @@ export const api = {
   report: (r: ReportIn) => post<Report>('/reports', { timestamp: new Date().toISOString(), ...r }),
   routeToday: (truck: string) => get<RouteToday>(`/route/today?truck=${encodeURIComponent(truck)}`),
   // Timestamp is when the driver filled the tank, even if it syncs later.
-  completeDelivery: (id: string, truckId: string) =>
+  completeDelivery: (id: string, truckId: string, service: Service = 'water') =>
     post<Completion>(`/deliveries/${encodeURIComponent(id)}/complete`, {
       truck_id: truckId,
+      service,
       timestamp: new Date().toISOString(),
     }),
   dashboard: () => get<Dashboard>('/dashboard'),
   outbreaks: () => get<OutbreakAlert[]>('/outbreaks'),
   advisories: () => get<Advisory[]>('/advisories'),
-  issueAdvisory: (a: AdvisoryIn) => post<Advisory>('/advisories', a),
+  issueAdvisory: (a: AdvisoryIn) => postNow<Advisory>('/advisories', a, staffHeaders()),
   liftAdvisory: async (zone: string) => {
-    const res = await fetch(`/api/advisories/${encodeURIComponent(zone)}`, { method: 'DELETE' })
+    const res = await netFetch(`/api/advisories/${encodeURIComponent(zone)}`, { method: 'DELETE', headers: staffHeaders() })
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+  },
+  attention: () => get<AttentionItem[]>('/attention'),
+  sensor: (id: string) => get<SensorReading>(`/households/${encodeURIComponent(id)}/sensor`),
+  simulateUsage: (id: string, litres = 25) =>
+    postNow<SensorReading>(`/households/${encodeURIComponent(id)}/sensor/simulate-usage`, { litres }),
+  classify: (text: string) => postNow<Classification>('/reports/classify', { text }),
+  demoReset: async () => {
+    const res = await netFetch('/api/demo/reset', { method: 'POST' })
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
   },
   parts: () => get<Part[]>('/parts'),

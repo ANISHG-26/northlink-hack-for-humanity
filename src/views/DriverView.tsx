@@ -7,12 +7,14 @@ import {
   RefreshCw,
   ScanLine,
   TriangleAlert,
+  Siren,
   Truck,
+  Droplet,
   WifiOff,
   X,
 } from 'lucide-react'
 import { api, flushQueue, pendingPosts } from '../api/client'
-import type { Household, RouteToday } from '../api/types'
+import type { Household, RouteToday, Service } from '../api/types'
 import { OfflineBanner } from '../components/OfflineBanner'
 import { QrScanner } from '../components/driver/QrScanner'
 import { RouteStopCard } from '../components/driver/RouteStopCard'
@@ -44,6 +46,7 @@ export function DriverView() {
   const queueVersion = useAppStore((s) => s.queueVersion)
 
   const [truckId, setTruckId] = useState('T2')
+  const [service, setService] = useState<Service>('water')
   const [route, setRoute] = useState<RouteToday | null>(null)
   const [cachedAt, setCachedAt] = useState<string | undefined>()
   const [loadError, setLoadError] = useState(false)
@@ -83,8 +86,8 @@ export function DriverView() {
     return pendingPosts().flatMap((p) => {
       const m = p.path.match(COMPLETE_PATH)
       if (!m) return []
-      const body = p.body as { timestamp?: string; truck_id?: string }
-      return [{ household_id: decodeURIComponent(m[1]), at: body.timestamp ?? p.queuedAt }]
+      const body = p.body as { timestamp?: string; truck_id?: string; service?: Service }
+      return [{ household_id: decodeURIComponent(m[1]), service: body.service ?? 'water', at: body.timestamp ?? p.queuedAt }]
     })
   }, [queueVersion])
 
@@ -99,9 +102,9 @@ export function DriverView() {
     }
   }, [pending.length, load])
 
-  const pendingIds = new Set(pending.map((p) => p.household_id))
-  const stops = route?.stops.filter((s) => !pendingIds.has(s.household_id)) ?? []
-  const completed = route?.completed.filter((c) => !pendingIds.has(c.household_id)) ?? []
+  const pendingKeys = new Set(pending.map((p) => `${p.household_id}:${p.service}`))
+  const stops = route?.stops.filter((s) => !pendingKeys.has(`${s.household_id}:${s.service}`)) ?? []
+  const completed = route?.completed.filter((c) => !pendingKeys.has(`${c.household_id}:${c.service}`)) ?? []
 
   async function complete(raw: string) {
     const normalized = normalizeHouseCode(raw)
@@ -115,7 +118,7 @@ export function DriverView() {
     }
     setBusy(true)
     try {
-      const res = await api.completeDelivery(normalized, truckId)
+      const res = await api.completeDelivery(normalized, truckId, service)
       if (res.queued) {
         setMessage({ kind: 'queued', code: normalized })
       } else {
@@ -192,6 +195,25 @@ export function DriverView() {
             {t.driver.simulateOffline}
           </button>
         </div>
+
+        {/* Job type */}
+        <fieldset>
+          <legend className="font-semibold text-navy">{t.driver.serviceLabel}</legend>
+          <div className="mt-1 grid grid-cols-2 gap-2">
+            {(['water', 'sewage'] as const).map((sv) => {
+              const Icon = sv === 'water' ? Droplet : Siren
+              return (
+                <label key={sv} className="cursor-pointer">
+                  <input type="radio" name="service" value={sv} checked={service === sv} onChange={() => setService(sv)} className="peer sr-only" />
+                  <span className="tap flex items-center justify-center gap-2 rounded-xl border-2 border-slate-200 px-3 font-semibold text-navy peer-checked:border-navy peer-checked:bg-navy peer-checked:text-white peer-focus-visible:outline peer-focus-visible:outline-[3px] peer-focus-visible:outline-glacier">
+                    <Icon aria-hidden="true" className="h-5 w-5" />
+                    {t.driver.service[sv]}
+                  </span>
+                </label>
+              )
+            })}
+          </div>
+        </fieldset>
 
         {/* Scan / enter code */}
         <div>
@@ -302,7 +324,7 @@ export function DriverView() {
         ) : (
           <ol className="flex flex-col gap-3">
             {stops.map((s) => (
-              <RouteStopCard key={s.household_id} stop={s} />
+              <RouteStopCard key={`${s.household_id}-${s.service}`} stop={s} />
             ))}
           </ol>
         )}
@@ -318,8 +340,11 @@ export function DriverView() {
         ) : (
           <ul className="card !p-0 divide-y divide-slate-100">
             {pending.map((p) => (
-              <li key={`p-${p.household_id}`} className="flex flex-wrap items-center justify-between gap-2 px-4 py-3">
-                <span className="text-xl font-bold text-navy">{p.household_id}</span>
+              <li key={`p-${p.household_id}-${p.service}`} className="flex flex-wrap items-center justify-between gap-2 px-4 py-3">
+                <span>
+                  <span className="text-xl font-bold text-navy">{p.household_id}</span>
+                  <span className="ml-2 text-slate-600">{t.driver.service[p.service]}</span>
+                </span>
                 <span className="inline-flex items-center gap-2 rounded-full bg-glacier/10 px-3 py-1 font-semibold text-glacier">
                   <CloudUpload aria-hidden="true" className="h-5 w-5" />
                   {t.driver.waitingSync} · {fmt.time(p.at)}
@@ -327,8 +352,11 @@ export function DriverView() {
               </li>
             ))}
             {completed.map((c) => (
-              <li key={c.household_id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-3">
-                <span className="text-xl font-bold text-navy">{c.household_id}</span>
+              <li key={`${c.household_id}-${c.service}`} className="flex flex-wrap items-center justify-between gap-2 px-4 py-3">
+                <span>
+                  <span className="text-xl font-bold text-navy">{c.household_id}</span>
+                  <span className="ml-2 text-slate-600">{t.driver.service[c.service]}</span>
+                </span>
                 <span className="inline-flex items-center gap-2 rounded-full bg-green-50 px-3 py-1 font-semibold text-status-safe">
                   <CircleCheckBig aria-hidden="true" className="h-5 w-5" />
                   {t.delivery.delivered(fmt.time(c.at))}

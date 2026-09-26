@@ -61,7 +61,7 @@ export function ZoneMap({ zones }: { zones: ZoneStatus[] }) {
 
   return (
     <section aria-labelledby="map-heading" className="card">
-      <h2 id="map-heading" className="text-xl font-bold text-navy">
+      <h2 id="map-heading" tabIndex={-1} className="text-xl font-bold text-navy scroll-mt-24">
         {t.dispatcher.mapTitle}
       </h2>
       <div

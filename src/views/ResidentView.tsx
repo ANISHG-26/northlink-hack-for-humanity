@@ -8,7 +8,8 @@ import { HouseholdQR } from '../components/resident/HouseholdQR'
 import { LevelUpdater } from '../components/resident/LevelUpdater'
 import { ReportProblem } from '../components/resident/ReportProblem'
 import { SafetyBanner } from '../components/resident/SafetyBanner'
-import { WaterCard } from '../components/resident/WaterCard'
+import { SensorPage } from '../components/resident/SensorPage'
+import { TanksCard } from '../components/resident/TanksCard'
 import { useT } from '../i18n'
 import { RESIDENT_HOUSEHOLD, useAppStore } from '../store/useAppStore'
 
@@ -20,6 +21,7 @@ export function ResidentView() {
   const [status, setStatus] = useState<HouseholdStatus | null>(null)
   const [cachedAt, setCachedAt] = useState<string | undefined>()
   const [error, setError] = useState(false)
+  const [showSensor, setShowSensor] = useState(false)
 
   const load = useCallback(async () => {
     try {
@@ -56,6 +58,20 @@ export function ResidentView() {
     if (!res.queued) setStatus(res.data)
   }
 
+  if (showSensor) {
+    return (
+      <div className="max-w-3xl mx-auto">
+        <SensorPage
+          householdId={RESIDENT_HOUSEHOLD}
+          onBack={() => {
+            setShowSensor(false)
+            void load()
+          }}
+        />
+      </div>
+    )
+  }
+
   if (!status) {
     return (
       <div className="card flex flex-col items-center gap-4 py-12 text-center" role="status">
@@ -83,10 +99,15 @@ export function ResidentView() {
   }
 
   return (
-    <div className="flex flex-col gap-5 max-w-2xl mx-auto">
+    <div className="flex flex-col gap-5 max-w-3xl mx-auto">
       {(!isOnline || cachedAt) && <OfflineBanner cachedAt={cachedAt} />}
       <SafetyBanner safety={status.safety} />
-      <WaterCard forecast={status.forecast} />
+      <TanksCard
+        forecast={status.forecast}
+        sewage={status.sewage}
+        measurement={status.measurement}
+        onOpenSensor={() => setShowSensor(true)}
+      />
       <DeliveryTracker delivery={status.delivery} onAdvance={advance} />
       <LevelUpdater onSubmit={updateLevel} />
       <ReportProblem householdId={RESIDENT_HOUSEHOLD} />

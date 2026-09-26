@@ -1,4 +1,4 @@
-import { ChevronDown, Flame, Megaphone, OctagonX, ShieldAlert, ShieldCheck } from 'lucide-react'
+import { ChevronDown, Flame, Lock, Megaphone, OctagonX, ShieldAlert, ShieldCheck } from 'lucide-react'
 import type { OutbreakAlert, Zone } from '../../api/types'
 import { useT } from '../../i18n'
 import { useAppStore } from '../../store/useAppStore'
@@ -8,6 +8,7 @@ const LOCALES = { en: 'en-CA', fr: 'fr-CA', iu: 'en-CA' } as const
 export function OutbreakPanel({ alerts, onIssue }: { alerts: OutbreakAlert[]; onIssue: (zone: Zone) => void }) {
   const t = useT()
   const lang = useAppStore((s) => s.lang)
+  const staff = useAppStore((s) => s.staffPin !== null)
   const d = t.dispatcher
 
   function weekday(iso: string) {
@@ -20,6 +21,7 @@ export function OutbreakPanel({ alerts, onIssue }: { alerts: OutbreakAlert[]; on
         <ShieldAlert aria-hidden="true" className="h-6 w-6 text-status-nodrink" />
         {d.alertsTitle}
       </h2>
+      <p className="mt-1 text-slate-600">{d.alertsNote}</p>
       {alerts.length === 0 ? (
         <p className="mt-3 flex items-center gap-2 text-status-safe font-semibold">
           <ShieldCheck aria-hidden="true" className="h-5 w-5" />
@@ -51,6 +53,11 @@ export function OutbreakPanel({ alerts, onIssue }: { alerts: OutbreakAlert[]; on
                         <Flame aria-hidden="true" className="h-5 w-5" />
                       )}
                       {d.advisoryInPlace(t.safety[a.advisory_active])}
+                    </p>
+                  ) : !staff ? (
+                    <p className="inline-flex items-center gap-2 text-slate-600">
+                      <Lock aria-hidden="true" className="h-5 w-5" />
+                      {t.staff.locked}
                     </p>
                   ) : (
                     <button

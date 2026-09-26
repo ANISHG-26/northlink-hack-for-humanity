@@ -1,5 +1,16 @@
 /** Household water tank with animated fill level. Decorative shape, labelled for screen readers. */
-export function TankIllustration({ percent, label }: { percent: number; label: string }) {
+export function TankIllustration({
+  percent,
+  label,
+  variant = 'clean',
+}: {
+  percent: number
+  label: string
+  variant?: 'clean' | 'waste'
+}) {
+  const id = variant // unique SVG ids per tank on the same page
+  const top1 = variant === 'waste' ? '#8A7B6A' : '#0E9AA7'
+  const top2 = variant === 'waste' ? '#5B4E42' : '#2B6CB0'
   const pct = Math.max(0, Math.min(100, percent))
   // Inner water area: x 14..106, y 22..150 (height 128)
   const top = 22
@@ -9,12 +20,12 @@ export function TankIllustration({ percent, label }: { percent: number; label: s
   return (
     <svg viewBox="0 0 120 170" role="img" aria-label={label} className="w-full h-auto max-w-[9.5rem]">
       <defs>
-        <clipPath id="tank-inner">
+        <clipPath id={`tank-inner-${id}`}>
           <rect x="14" y={top} width="92" height={height} rx="10" />
         </clipPath>
-        <linearGradient id="water-grad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#0E9AA7" />
-          <stop offset="1" stopColor="#2B6CB0" />
+        <linearGradient id={`water-grad-${id}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor={top1} />
+          <stop offset="1" stopColor={top2} />
         </linearGradient>
       </defs>
 
@@ -25,13 +36,13 @@ export function TankIllustration({ percent, label }: { percent: number; label: s
       <rect x="14" y={top} width="92" height={height} rx="10" fill="#EAF4F8" />
 
       {/* Water */}
-      <g clipPath="url(#tank-inner)">
+      <g clipPath={`url(#tank-inner-${id})`}>
         <g style={{ transform: `translateY(${waterY - top}px)`, transition: 'transform 900ms cubic-bezier(.2,.8,.2,1)' }}>
-          <rect x="0" y={top + 4} width="120" height={height + 10} fill="url(#water-grad)" />
+          <rect x="0" y={top + 4} width="120" height={height + 10} fill={`url(#water-grad-${id})`} />
           <path
             className="tank-wave"
             d={`M -40 ${top + 6} q 15 -6 30 0 t 30 0 t 30 0 t 30 0 t 30 0 t 30 0 t 30 0 V ${top + 12} H -40 Z`}
-            fill="#0E9AA7"
+            fill={top1}
           />
         </g>
       </g>

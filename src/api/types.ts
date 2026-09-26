@@ -3,6 +3,9 @@
 
 export type Zone = 'A' | 'B' | 'C' | 'D' | 'E' | 'F'
 export type VulnerableType = 'elder' | 'infant' | 'medical'
+export type MeasurementSource = 'sensor' | 'estimated'
+export type Service = 'water' | 'sewage'
+export type AdvisorySource = 'Municipal water office' | 'Regional health board'
 
 export interface Household {
   id: string // e.g. "A-12"
@@ -11,9 +14,15 @@ export interface Household {
   tank_capacity_l: number
   current_level_l: number
   last_delivery: string
+  last_delivery_litres: number
   vulnerable: boolean // elders, infants, or medical needs
   vulnerable_type: VulnerableType | null
   last_truck_id: string
+  measurement_source: MeasurementSource
+  empty_tank_weight_kg: number | null
+  sewage_capacity_l: number
+  sewage_level_l: number
+  last_sewage_pickup: string | null
 }
 
 export interface Truck {
@@ -75,12 +84,14 @@ export interface Advisory {
   reason: string
   message: string | null
   issued_at: string | null
+  source: AdvisorySource
 }
 
 export interface AdvisoryIn {
   zone: Zone
   level: 'boil' | 'do_not_drink'
   message: string
+  source: AdvisorySource
 }
 
 // --- Resident status ---------------------------------------------------------
@@ -107,6 +118,25 @@ export interface Safety {
   since: string | null
   reason: string | null
   message: string | null
+  source: AdvisorySource | null
+  issued_at: string | null
+  last_checked: string
+}
+
+export interface SewageStatus {
+  litres: number
+  capacity_l: number
+  percent: number
+  daily_inflow_l: number
+  days_until_full: number
+  predicted_full: string
+  is_full: boolean
+}
+
+export interface Measurement {
+  source: MeasurementSource
+  updated_at: string
+  note: string
 }
 
 export interface Delivery {
@@ -121,17 +151,20 @@ export interface Delivery {
 export interface HouseholdStatus {
   household: Household
   forecast: Forecast
+  sewage: SewageStatus
+  measurement: Measurement
   safety: Safety
   delivery: Delivery
 }
 
-export type ReportType = 'water_quality' | 'tank_damage' | 'illness'
+export type ReportType = 'clean_water_low' | 'sewage_full' | 'water_quality' | 'tank_damage' | 'illness' | 'other'
 
 export interface ReportIn {
   type: ReportType
   household_id: string
   timestamp?: string
   note?: string
+  classifier_category?: ReportType
 }
 
 export interface Report extends ReportIn {
@@ -148,9 +181,10 @@ export interface RouteStop {
   rank: number
   household_id: string
   zone: Zone
+  service: Service
   vulnerable_type: VulnerableType | null
   advisory: WaterStatus | null
-  hours_until_empty: number
+  hours_until_empty: number // water: until empty; sewage: until full
   litres_left: number
   litres_to_fill: number
   urgency: Urgency
@@ -163,6 +197,7 @@ export interface Completion {
   household_id: string
   zone: Zone
   truck_id: string
+  service: Service
   at: string // ISO datetime
 }
 
@@ -182,16 +217,39 @@ export interface ZoneStatus {
   households: number
   out_of_water: number
   running_low: number
+  sewage_full: number
   illness_7d: number
   advisory: WaterStatus | null
   status: ZoneState
 }
 
+export interface LeakFlag {
+  household_id: string
+  zone: Zone
+  kind: 'sudden_drop' | 'overnight_loss'
+  litres_lost: number
+  at: string
+  note: string
+}
+
+export interface Staffing {
+  drivers_available: number
+  drivers_needed: number
+  trucks_in_service: number
+  trucks_total: number
+}
+
 export interface Dashboard {
   out_of_water: number
   running_low: number
+  sewage_full: number
   delivered_today: number
   active_advisories: number
+  sensor_homes: number
+  estimated_homes: number
+  sensor_pct: number
+  possible_leaks: LeakFlag[]
+  staffing: Staffing
   zones: ZoneStatus[]
 }
 
@@ -253,4 +311,61 @@ export interface SealiftPlan {
   parts: PartPlan[]
   at_risk: PartPlan[]
   order: OrderLine[]
+}
+
+// --- Sensor / classifier / attention ------------------------------------------------
+
+export interface SensorPoint {
+  at: string
+  litres: number
+}
+
+export interface LeakSignal {
+  kind: 'sudden_drop' | 'overnight_loss'
+  start: string
+  end: string
+  litres_lost: number
+  rate_l_per_h: number
+  note: string
+}
+
+export interface SensorReading {
+  household_id: string
+  empty_tank_kg: number
+  raw_weight_kg: number
+  smoothed_weight_kg: number
+  litres: number
+  capacity_l: number
+  updated_at: string
+  series_24h: SensorPoint[]
+  leak: LeakSignal | null
+}
+
+export interface Classification {
+  category: ReportType
+  confidence: number
+  matched: string[]
+  scores: Record<string, number>
+}
+
+export type AttentionKind =
+  | 'sewage_full'
+  | 'out_of_water'
+  | 'clean_water_low'
+  | 'illness'
+  | 'water_quality'
+  | 'possible_leak'
+  | 'tank_damage'
+  | 'other'
+
+export interface AttentionItem {
+  id: string
+  kind: AttentionKind
+  household_id: string
+  zone: Zone
+  at: string
+  score: number
+  priority: Urgency
+  why: string
+  detail: string | null
 }

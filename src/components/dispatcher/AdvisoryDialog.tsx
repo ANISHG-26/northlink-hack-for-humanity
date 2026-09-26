@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Flame, LoaderCircle, Megaphone, OctagonX, TriangleAlert, X } from 'lucide-react'
 import { api } from '../../api/client'
-import type { Zone } from '../../api/types'
+import type { AdvisorySource, Zone } from '../../api/types'
 import { useT } from '../../i18n'
 import { SafetyBanner } from '../resident/SafetyBanner'
 
 const ZONES: Zone[] = ['A', 'B', 'C', 'D', 'E', 'F']
+const SOURCES: AdvisorySource[] = ['Municipal water office', 'Regional health board']
 type Level = 'boil' | 'do_not_drink'
 
 /** Modal to issue a water advisory, with a live preview of the resident banner. */
@@ -25,6 +26,8 @@ export function AdvisoryDialog({
   const [level, setLevel] = useState<Level>('boil')
   const [message, setMessage] = useState(d.defaultBoil)
   const [touched, setTouched] = useState(false)
+  const [source, setSource] = useState<AdvisorySource>('Municipal water office')
+  const [confirmed, setConfirmed] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState(false)
 
@@ -44,8 +47,7 @@ export function AdvisoryDialog({
     setBusy(true)
     setError(false)
     try {
-      const res = await api.issueAdvisory({ zone, level, message })
-      if (res.queued) throw new Error('offline')
+      await api.issueAdvisory({ zone, level, message, source })
       onIssued(zone)
     } catch {
       setError(true)
@@ -125,6 +127,24 @@ export function AdvisoryDialog({
           </fieldset>
 
           <div>
+            <label htmlFor="adv-source" className="font-semibold text-navy">
+              {d.source}
+            </label>
+            <select
+              id="adv-source"
+              value={source}
+              onChange={(e) => setSource(e.target.value as AdvisorySource)}
+              className="tap mt-1 block w-full rounded-xl border-2 border-slate-300 bg-white px-3 text-lg"
+            >
+              {SOURCES.map((s) => (
+                <option key={s} value={s}>
+                  {t.safety.sources[s]}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
             <label htmlFor="adv-message" className="font-semibold text-navy">
               {d.message}
             </label>
@@ -150,9 +170,22 @@ export function AdvisoryDialog({
                 since: new Date().toLocaleDateString('en-CA'),
                 reason: null,
                 message,
+                source,
+                issued_at: new Date().toISOString(),
+                last_checked: new Date().toISOString(),
               }}
             />
           </div>
+
+          <label className="flex cursor-pointer items-start gap-3 rounded-xl border-2 border-slate-200 p-3">
+            <input
+              type="checkbox"
+              checked={confirmed}
+              onChange={(e) => setConfirmed(e.target.checked)}
+              className="mt-1 h-5 w-5 shrink-0 accent-teal"
+            />
+            <span className="font-semibold text-navy">{d.confirmCheck(t.safety.sources[source])}</span>
+          </label>
 
           {error && (
             <p role="alert" className="flex items-center gap-2 font-semibold text-status-nodrink">
@@ -172,7 +205,7 @@ export function AdvisoryDialog({
           </button>
           <button
             type="submit"
-            disabled={busy || !message.trim()}
+            disabled={busy || !message.trim() || !confirmed}
             className="tap flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-status-boil px-5 py-3 font-bold text-white hover:bg-navy disabled:opacity-60"
           >
             {busy ? <LoaderCircle aria-hidden="true" className="h-5 w-5 animate-spin" /> : <Megaphone aria-hidden="true" className="h-5 w-5" />}

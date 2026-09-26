@@ -1,4 +1,4 @@
-import { Baby, ChevronDown, Flame, HeartPulse, OctagonX, PackageX, UserRound } from 'lucide-react'
+import { Baby, ChevronDown, Droplet, Flame, HeartPulse, OctagonX, PackageX, Siren, UserRound } from 'lucide-react'
 import type { RouteStop } from '../../api/types'
 import { useT } from '../../i18n'
 import { useFormat } from '../../i18n/format'
@@ -11,6 +11,9 @@ export function RouteStopCard({ stop }: { stop: RouteStop }) {
   const fmt = useFormat()
   const VIcon = stop.vulnerable_type ? VULNERABLE_ICONS[stop.vulnerable_type] : null
   const AdvIcon = stop.advisory === 'nodrink' ? OctagonX : Flame
+  const sewage = stop.service === 'sewage'
+  const SvcIcon = sewage ? Siren : Droplet
+  const timeText = sewage ? t.driver.fullIn(stop.hours_until_empty) : t.driver.emptyIn(stop.hours_until_empty)
 
   return (
     <li className="card !p-0 overflow-hidden">
@@ -29,8 +32,14 @@ export function RouteStopCard({ stop }: { stop: RouteStop }) {
             </p>
             <UrgencyBadge urgency={stop.urgency} />
           </div>
-          <p className="text-slate-600">{t.safety.zone(stop.zone)}</p>
-          <p className="mt-1 text-lg font-semibold text-ink">{t.driver.emptyIn(stop.hours_until_empty)}</p>
+          <p className="flex flex-wrap items-center gap-x-3 text-slate-600">
+            <span>{t.safety.zone(stop.zone)}</span>
+            <span className={`inline-flex items-center gap-1 font-semibold ${sewage ? 'text-status-nodrink' : 'text-glacier'}`}>
+              <SvcIcon aria-hidden="true" className="h-5 w-5" />
+              {t.driver.service[stop.service]}
+            </span>
+          </p>
+          <p className="mt-1 text-lg font-semibold text-ink">{timeText}</p>
           {(VIcon || stop.advisory) && (
             <ul className="mt-2 flex flex-wrap gap-2">
               {VIcon && stop.vulnerable_type && (
@@ -62,11 +71,11 @@ export function RouteStopCard({ stop }: { stop: RouteStop }) {
         </summary>
         <div className="px-4 pb-4 text-slate-700">
           <ul className="list-disc pl-6 space-y-1">
-            <li>{t.driver.emptyIn(stop.hours_until_empty)}</li>
+            <li>{timeText}</li>
             {stop.vulnerable_type && <li>{t.driver.vulnerable[stop.vulnerable_type]}</li>}
             {stop.advisory && <li>{t.driver.advisory[stop.advisory]}</li>}
-            <li>{t.driver.litresLeft(fmt.number(stop.litres_left))}</li>
-            <li>{t.driver.toFill(fmt.number(stop.litres_to_fill))}</li>
+            {!sewage && <li>{t.driver.litresLeft(fmt.number(stop.litres_left))}</li>}
+            <li>{sewage ? t.driver.toPump(fmt.number(stop.litres_to_fill)) : t.driver.toFill(fmt.number(stop.litres_to_fill))}</li>
           </ul>
           <p className="mt-2 text-slate-500">{t.driver.rankNote(fmt.number(stop.priority_score))}</p>
         </div>

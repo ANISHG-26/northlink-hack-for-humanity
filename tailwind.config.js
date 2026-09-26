@@ -6,7 +6,13 @@ export default {
       colors: {
         navy: '#0F2A44',
         glacier: '#2B6CB0',
-        teal: '#0E9AA7',
+        teal: {
+          DEFAULT: '#0E9AA7',
+          // Darker teal for text on white (passes WCAG AA for normal text).
+          dark: '#0B7285',
+        },
+        // Merged with Tailwind's default sky palette.
+        sky: { accent: '#38BDF8' },
         bg: '#F7F9FB',
         card: '#FFFFFF',
         ink: '#1A202C',
@@ -24,6 +30,10 @@ export default {
         base: ['1.125rem', { lineHeight: '1.6' }],
         sm: ['1.125rem', { lineHeight: '1.5' }],
         lg: ['1.25rem', { lineHeight: '1.5' }],
+      },
+      backgroundImage: {
+        // Teal-to-sky-blue accent used for underlines, buttons and highlights.
+        accent: 'linear-gradient(90deg, #0E9AA7 0%, #38BDF8 100%)',
       },
       minHeight: { tap: '48px' },
       minWidth: { tap: '48px' },
