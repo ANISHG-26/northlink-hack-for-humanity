@@ -1,39 +1,56 @@
-import type { MouseEvent } from 'react'
-import {
-  ArrowRight,
-  BarChart3,
-  Briefcase,
-  CircleHelp,
-  Droplet,
-  Handshake,
-  HardHat,
-  Map as MapIcon,
-  Package,
-  Truck,
-  UsersRound,
-  Waves,
-} from 'lucide-react'
-import { LogoMark, Wordmark } from '../components/Logo'
+import type { MouseEvent, ReactNode } from 'react'
+import { Brand } from '../components/Brand'
+import { LanguageToggle } from '../components/LanguageToggle'
 import { useT } from '../i18n'
 import { useAppStore, type View } from '../store/useAppStore'
 
-type CardKey = 'ensure' | 'track' | 'data' | 'inventory' | 'partners' | 'jobs'
+const S = { width: 26, height: 26, viewBox: '0 0 24 24', fill: 'none', stroke: '#fff', strokeWidth: 1.8, 'aria-hidden': true } as const
 
-// Each card: icon, coloured underline, destination.
-const CARDS: { key: CardKey; Icon: typeof Droplet; line: string; to: View; anchor?: string }[] = [
-  { key: 'ensure', Icon: Droplet, line: 'from-sky-300 to-sky-accent', to: 'resident' },
-  { key: 'track', Icon: Truck, line: 'from-teal to-sky-accent', to: 'driver' },
-  { key: 'data', Icon: BarChart3, line: 'from-emerald-300 to-teal', to: 'dispatcher' },
-  { key: 'inventory', Icon: Package, line: 'from-indigo-300 to-sky-300', to: 'parts' },
-  { key: 'partners', Icon: Handshake, line: 'from-amber-300 to-orange-300', to: 'parts', anchor: 'partners-heading' },
-  { key: 'jobs', Icon: Briefcase, line: 'from-rose-300 to-amber-300', to: 'jobs' },
+// Tile icons, underline colours and destinations from the approved reference.
+const TILES: { key: 'ensure' | 'track' | 'data' | 'parts' | 'partners' | 'jobs'; color: string; to: View; anchor?: string; icon: ReactNode }[] = [
+  { key: 'ensure', color: '#7FD3E0', to: 'resident', icon: <svg {...S}><path d="M12 2.7s6 6.4 6 11a6 6 0 0 1-12 0c0-4.6 6-11 6-11z" /></svg> },
+  {
+    key: 'track',
+    color: '#9BC7F0',
+    to: 'driver',
+    icon: (
+      <svg {...S}>
+        <rect x="1" y="6" width="14" height="10" rx="1" />
+        <path d="M15 9h4l3 3v4h-7" />
+        <circle cx="6" cy="18" r="2" />
+        <circle cx="18" cy="18" r="2" />
+      </svg>
+    ),
+  },
+  { key: 'data', color: '#8FE0C4', to: 'dispatcher', icon: <svg {...S}><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" /></svg> },
+  {
+    key: 'parts',
+    color: '#F3D2BC',
+    to: 'parts',
+    icon: (
+      <svg {...S}>
+        <circle cx="12" cy="12" r="3" />
+        <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-2.9 1.2V21a2 2 0 0 1-4 0v-.1A1.7 1.7 0 0 0 7 19.4a1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.7 1.7 0 0 0 1.2 14H1a2 2 0 0 1 0-4h.1A1.7 1.7 0 0 0 2.6 7a1.7 1.7 0 0 0-.3-1.8l-.1-.1A2 2 0 1 1 5 2.3l.1.1A1.7 1.7 0 0 0 7 2.7 1.7 1.7 0 0 0 8 1.2V1a2 2 0 0 1 4 0" />
+      </svg>
+    ),
+  },
+  { key: 'partners', color: '#F0B97A', to: 'parts', anchor: 'partners-heading', icon: <svg {...S}><path d="M3 21h18M5 21V10M19 21V10M9 21V10M15 21V10M2 10l10-7 10 7z" /></svg> },
+  {
+    key: 'jobs',
+    color: '#C9B6F0',
+    to: 'jobs',
+    icon: (
+      <svg {...S}>
+        <circle cx="9" cy="7" r="4" />
+        <path d="M1 21v-1a6 6 0 0 1 12 0v1M16 11l2 2 4-4" />
+      </svg>
+    ),
+  },
 ]
-
-const WHY_ICONS = [CircleHelp, HardHat, Waves, MapIcon]
 
 export function HomeView() {
   const t = useT()
-  const h = t.home
+  const r = t.ref
   const navigate = useAppStore((s) => s.navigate)
 
   function go(e: MouseEvent, v: View, anchor?: string) {
@@ -42,111 +59,61 @@ export function HomeView() {
   }
 
   return (
-    <main id="main" tabIndex={-1} className="flex-1 outline-none">
-      {/* ---------- Hero ---------- */}
-      <section aria-labelledby="hero-title" className="hero relative isolate flex min-h-[100svh] flex-col overflow-hidden text-white">
-        {/* Arctic sky over flat tundra and Hudson Bay (or a real photo at /hero.jpg when provided) */}
-        <div aria-hidden="true" className="hero-sky absolute inset-0 -z-20" />
-        <svg aria-hidden="true" className="absolute inset-x-0 bottom-0 -z-10 h-[46%] w-full" viewBox="0 0 1440 400" preserveAspectRatio="none">
-          <g fill="none" stroke="#ffffff" strokeLinecap="round">
-            <path className="hero-wave" d="M0 120 C 240 90, 480 150, 720 120 S 1200 90, 1440 120" strokeOpacity="0.35" strokeWidth="1.5" />
-            <path className="hero-wave hero-wave--slow" d="M0 170 C 240 140, 480 200, 720 170 S 1200 140, 1440 170" strokeOpacity="0.25" strokeWidth="1.5" />
-            <path className="hero-wave" d="M0 230 C 260 200, 500 260, 760 230 S 1220 200, 1440 230" strokeOpacity="0.2" strokeWidth="1.5" />
-            <path className="hero-wave hero-wave--slow" d="M0 300 C 240 275, 520 325, 760 300 S 1200 275, 1440 300" strokeOpacity="0.15" strokeWidth="1.5" />
-          </g>
+    <>
+      <header className="hero">
+        {/* Real photo when public/hero.jpg exists; otherwise the gradient sky shows through. */}
+        <div className="hero-photo" role="img" aria-label={r.heroPhoto} style={{ backgroundImage: "url('/hero.jpg')" }} />
+        <svg className="hero-waves" viewBox="0 0 1440 400" preserveAspectRatio="none" aria-hidden="true">
+          <path d="M0 220 C 240 180 480 260 720 220 S 1200 180 1440 220" fill="none" stroke="#fff" strokeWidth="1.5" />
+          <path d="M0 270 C 260 230 500 310 760 270 S 1220 230 1440 270" fill="none" stroke="#fff" strokeWidth="1" />
+          <path d="M0 320 C 280 290 520 350 780 320 S 1240 290 1440 320" fill="none" stroke="#fff" strokeWidth=".8" />
         </svg>
-        {/* Dark overlay keeps text above WCAG AA over any part of the sky/photo */}
-        <div aria-hidden="true" className="hero-overlay absolute inset-0 -z-10" />
+        <div className="wrap nav">
+          <Brand />
+          <LanguageToggle />
+        </div>
 
-        <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 pb-8 pt-24 sm:pt-28">
-          {/* Brand block on a light frosted plate so the navy/teal wordmark stays legible */}
-          <div className="max-w-xl">
-            <div className="inline-flex items-center gap-4 rounded-3xl bg-white/85 px-5 py-4 shadow-lg backdrop-blur-md">
-              <LogoMark className="h-16 w-14 sm:h-20 sm:w-16" />
-              <div>
-                <h1 id="hero-title">
-                  <Wordmark className="text-4xl sm:text-5xl" />
-                </h1>
-                <p className="mt-2 text-sm font-bold tracking-[0.25em] text-navy">{h.tagline}</p>
-              </div>
-            </div>
-            <p className="mt-6 text-2xl font-semibold leading-snug text-white drop-shadow sm:text-3xl">{h.subtitle}</p>
-          </div>
-
-          <div className="mt-auto pt-10">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-end">
-              <ul aria-label={h.cardsLabel} className="grid flex-1 grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-                {CARDS.map(({ key, Icon, line, to, anchor }) => (
-                  <li key={key}>
-                    <a
-                      href={`/${to}${anchor ? `#${anchor}` : ''}`}
-                      onClick={(e) => go(e, to, anchor)}
-                      className="glass-card group flex h-full min-h-[8.5rem] flex-col justify-between rounded-2xl p-4 text-white transition hover:bg-white/25 focus-visible:outline-white"
-                    >
-                      <Icon aria-hidden="true" className="h-8 w-8" strokeWidth={1.75} />
-                      <span>
-                        <span className="block text-lg font-semibold leading-tight">{h.cards[key]}</span>
-                        <span aria-hidden="true" className={`mt-3 block h-1 w-10 rounded-full bg-gradient-to-r ${line} transition-all group-hover:w-16`} />
-                      </span>
-                    </a>
-                  </li>
-                ))}
-              </ul>
-              <a
-                href="/dispatcher#map-heading"
-                onClick={(e) => go(e, 'dispatcher', 'map-heading')}
-                className="tap inline-flex items-center justify-center gap-3 self-start rounded-full bg-white px-7 py-3 text-lg font-bold text-navy shadow-lg transition hover:bg-sky-50 lg:self-end focus-visible:outline-white"
-              >
-                {h.explore}
-                <ArrowRight aria-hidden="true" className="h-5 w-5" />
-              </a>
-            </div>
+        <div className="wrap hero-body">
+          <h1>{r.heroTitle}</h1>
+          <p className="lede">{r.lede}</p>
+          <div className="hero-actions">
+            <a className="btn btn-light" href="/resident" onClick={(e) => go(e, 'resident')}>
+              {r.checkWater}
+            </a>
+            <a className="btn btn-ghost" href="/dispatcher#map-heading" onClick={(e) => go(e, 'dispatcher', 'map-heading')}>
+              {r.openMap}
+            </a>
           </div>
         </div>
-      </section>
 
-      {/* ---------- Why now ---------- */}
-      <section aria-labelledby="why-title" className="bg-white">
-        <div className="mx-auto max-w-6xl px-4 py-12">
-          <h2 id="why-title" className="text-3xl font-bold text-navy">
-            {h.whyTitle}
-          </h2>
-          <span aria-hidden="true" className="mt-3 block h-1 w-16 rounded-full bg-accent" />
-          <ul className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {h.why.map((item, i) => {
-              const Icon = WHY_ICONS[i] ?? CircleHelp
-              return (
-                <li key={item} className="card flex gap-3">
-                  <Icon aria-hidden="true" className="h-7 w-7 shrink-0 text-teal-dark" />
-                  <p className="text-ink">{item}</p>
-                </li>
-              )
-            })}
+        <nav className="wrap" aria-label={r.sections}>
+          <ul className="tiles">
+            {TILES.map(({ key, color, to, anchor, icon }) => (
+              <li key={key}>
+                <a className="tile" href={`/${to}${anchor ? `#${anchor}` : ''}`} onClick={(e) => go(e, to, anchor)}>
+                  {icon}
+                  <span>{r.tiles[key]}</span>
+                  <i style={{ background: color }} aria-hidden="true" />
+                </a>
+              </li>
+            ))}
           </ul>
-          <p className="mt-6 rounded-2xl bg-navy p-5 text-xl font-semibold text-white">{h.bridge}</p>
-        </div>
-      </section>
+        </nav>
+      </header>
 
-      {/* ---------- Jobs teaser ---------- */}
-      <section aria-labelledby="home-jobs-title" className="bg-bg">
-        <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-12 md:flex-row md:items-center md:justify-between">
-          <div className="max-w-2xl">
-            <h2 id="home-jobs-title" className="flex items-center gap-3 text-3xl font-bold text-navy">
-              <UsersRound aria-hidden="true" className="h-8 w-8 text-teal-dark" />
-              {h.jobsTitle}
-            </h2>
-            <p className="mt-3 text-lg text-ink">{h.jobsText}</p>
-          </div>
-          <a
-            href="/jobs"
-            onClick={(e) => go(e, 'jobs')}
-            className="tap inline-flex items-center justify-center gap-2 self-start rounded-full bg-navy px-6 font-bold text-white hover:bg-glacier md:self-center"
-          >
-            {h.jobsCta}
-            <ArrowRight aria-hidden="true" className="h-5 w-5" />
-          </a>
-        </div>
-      </section>
-    </main>
+      <main id="main" tabIndex={-1} className="outline-none">
+        <section className="wrap why" aria-labelledby="why-title">
+          <h2 id="why-title">{t.home.whyTitle}</h2>
+          <ul>
+            {t.home.why.map((item) => (
+              <li key={item} className="card">
+                {item}
+              </li>
+            ))}
+          </ul>
+          <p className="bridge">{t.home.bridge}</p>
+        </section>
+      </main>
+    </>
   )
 }

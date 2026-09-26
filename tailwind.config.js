@@ -4,22 +4,22 @@ export default {
   theme: {
     extend: {
       colors: {
-        navy: '#0F2A44',
+        navy: '#0B2A3F',
         glacier: '#2B6CB0',
         teal: {
-          DEFAULT: '#0E9AA7',
+          DEFAULT: '#0E8C99',
           // Darker teal for text on white (passes WCAG AA for normal text).
-          dark: '#0B7285',
+          dark: '#0A6670',
         },
         // Merged with Tailwind's default sky palette.
         sky: { accent: '#38BDF8' },
-        bg: '#F7F9FB',
+        bg: '#F4F8FA',
         card: '#FFFFFF',
-        ink: '#1A202C',
+        ink: '#0B2A3F',
         status: {
-          safe: '#15803D',
-          boil: '#B45309',
-          nodrink: '#B91C1C',
+          safe: '#157A3E',
+          boil: '#9A4A06',
+          nodrink: '#A61B1B',
         },
       },
       fontFamily: {

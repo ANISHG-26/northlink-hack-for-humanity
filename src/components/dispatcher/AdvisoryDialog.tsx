@@ -3,7 +3,7 @@ import { Flame, LoaderCircle, Megaphone, OctagonX, TriangleAlert, X } from 'luci
 import { api } from '../../api/client'
 import type { AdvisorySource, Zone } from '../../api/types'
 import { useT } from '../../i18n'
-import { SafetyBanner } from '../resident/SafetyBanner'
+import { AdvisoryNotice } from '../resident/AdvisoryNotice'
 
 const ZONES: Zone[] = ['A', 'B', 'C', 'D', 'E', 'F']
 const SOURCES: AdvisorySource[] = ['Municipal water office', 'Regional health board']
@@ -163,7 +163,7 @@ export function AdvisoryDialog({
 
           <div>
             <p className="font-semibold text-navy mb-2">{d.preview}</p>
-            <SafetyBanner
+            <AdvisoryNotice
               safety={{
                 status: level === 'boil' ? 'boil' : 'nodrink',
                 zone,

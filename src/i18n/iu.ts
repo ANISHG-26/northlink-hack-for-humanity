@@ -11,9 +11,9 @@ export const iu: Strings = {
   tagline: 'Linking water to every house', // TODO: community translation review
   language: 'Language', // TODO: community translation review
   tabs: {
-    resident: 'Resident', // TODO: community translation review
+    resident: 'My home', // TODO: community translation review
     driver: 'Driver', // TODO: community translation review
-    dispatcher: 'Dispatcher', // TODO: community translation review
+    dispatcher: 'Staff', // TODO: community translation review
     parts: 'Parts', // TODO: community translation review
     jobs: 'Jobs', // TODO: community translation review
   },
@@ -21,15 +21,6 @@ export const iu: Strings = {
   offline: 'Offline', // TODO: community translation review
   offlineBanner: 'Offline, showing last saved info', // TODO: community translation review
   savedAt: en.savedAt, // TODO: community translation review
-  comingSoon: 'Coming soon', // TODO: community translation review
-  placeholder: {
-    resident: 'Your tank level, next delivery, and water safety status.', // TODO: community translation review
-    driver: 'Your delivery route for today.', // TODO: community translation review
-    dispatcher: 'Tank forecasts, routing, and illness reports across zones A to F.', // TODO: community translation review
-    parts: 'Water system parts and what to order before the next sealift.', // TODO: community translation review
-    jobs: 'Local jobs and training.', // TODO: community translation review
-  },
-  householdsLoaded: 'households loaded', // TODO: community translation review
   loadError: 'Could not load data.', // TODO: community translation review
   retry: 'Try again', // TODO: community translation review
   loading: 'Loading…', // TODO: community translation review
@@ -58,4 +49,5 @@ export const iu: Strings = {
   staff: en.staff, // TODO: community translation review
   jobs: en.jobs, // TODO: community translation review
   home: en.home, // TODO: community translation review
+  ref: en.ref, // TODO: community translation review
 }

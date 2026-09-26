@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { flushQueue, pendingPosts } from './api/client'
+import { AppBar } from './components/AppBar'
 import { Footer } from './components/Footer'
-import { SiteNav } from './components/SiteNav'
 import { LANGUAGES, useT } from './i18n'
 import { useAppStore } from './store/useAppStore'
 import { DispatcherView } from './views/DispatcherView'
@@ -29,7 +29,7 @@ export default function App() {
   }, [lang])
 
   useEffect(() => {
-    document.title = view === 'home' ? `Northlink — ${t.tagline}` : `${t.tabs[view]} · Northlink`
+    document.title = view === 'home' ? 'NorthLink — Water for every house in Inukjuak' : `${t.tabs[view]} · NorthLink`
   }, [view, t])
 
   // Replay queued offline actions automatically whenever we might be back online.
@@ -46,7 +46,6 @@ export default function App() {
   if (view === 'home') {
     return (
       <div className="min-h-screen flex flex-col">
-        <SiteNav variant="hero" />
         <HomeView />
         <Footer />
       </div>
@@ -56,8 +55,8 @@ export default function App() {
   const View = VIEWS[view]
   return (
     <div className="min-h-screen flex flex-col">
-      <SiteNav variant="app" />
-      <main id="main" tabIndex={-1} className="flex-1 w-full max-w-6xl mx-auto px-4 py-6 outline-none">
+      <AppBar />
+      <main id="main" tabIndex={-1} className="app wrap w-full flex-1 outline-none">
         <h1 className="sr-only">{t.tabs[view]}</h1>
         <View />
       </main>

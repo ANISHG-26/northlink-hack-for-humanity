@@ -7,20 +7,7 @@
     font-size: 16px;
   }
   body {
-    @apply bg-bg text-ink font-sans text-base antialiased;
-  }
-  /* Visible focus ring on every interactive element */
-  :focus-visible {
-    outline: 3px solid #2b6cb0;
-    outline-offset: 2px;
-    border-radius: 6px;
-  }
-  /* White ring on dark surfaces (navy bars, hero, glass cards) so it stays visible */
-  .bg-navy :focus-visible,
-  .hero :focus-visible,
-  #site-menu :focus-visible,
-  header :focus-visible {
-    outline-color: #ffffff;
+    @apply font-sans antialiased;
   }
 }
 
@@ -28,8 +15,17 @@
   .tap {
     @apply min-h-tap min-w-tap;
   }
+  /* Reference card: white, 1px line border, 20px radius, 28px padding (22px on phones) */
   .card {
-    @apply bg-card rounded-xl shadow-sm border border-slate-200 p-5;
+    background: #fff;
+    border: 1px solid #dce6ec;
+    border-radius: 20px;
+    padding: 28px;
+  }
+  @media (max-width: 560px) {
+    .card {
+      padding: 22px;
+    }
   }
 }
 
@@ -70,46 +66,4 @@
 }
 .zone-label > span > span {
   color: #1a202c;
-}
-
-/* ---------- Landing hero ---------- */
-/* Real photo (public/hero.jpg) if present; otherwise a calm Arctic dawn over flat
-   tundra and Hudson Bay. No mountains: Inukjuak is flat coastal tundra. */
-.hero-sky {
-  background:
-    url('/hero.jpg') center / cover no-repeat,
-    radial-gradient(ellipse 60% 22% at 72% 64%, rgba(255, 214, 170, 0.95), rgba(255, 190, 150, 0) 70%),
-    linear-gradient(
-      to bottom,
-      #3d6f9e 0%,
-      #6b9cc6 26%,
-      #a9c6df 44%,
-      #f3d3bd 58%,
-      #f7c9a8 63%,
-      #8fa9bf 64.5%,
-      #5d7f9c 76%,
-      #33526e 100%
-    );
-}
-/* Navy overlay: darker at top (nav) and bottom (text/cards) so white text passes AA. */
-.hero-overlay {
-  background:
-    linear-gradient(to bottom, rgba(15, 42, 68, 0.72) 0%, rgba(15, 42, 68, 0.35) 22%, rgba(15, 42, 68, 0.42) 45%, rgba(15, 42, 68, 0.75) 70%, rgba(15, 42, 68, 0.9) 100%),
-    linear-gradient(to right, rgba(15, 42, 68, 0.55) 0%, rgba(15, 42, 68, 0) 65%);
-}
-.glass-card {
-  background: rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  box-shadow: 0 8px 24px rgba(15, 42, 68, 0.25);
-}
-@keyframes hero-drift {
-  from { transform: translateX(0); }
-  to { transform: translateX(-40px); }
-}
-.hero-wave { animation: hero-drift 14s ease-in-out infinite alternate; }
-.hero-wave--slow { animation-duration: 22s; }
-@media (prefers-reduced-motion: reduce) {
-  .hero-wave { animation: none; }
 }
